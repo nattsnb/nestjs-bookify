@@ -1,6 +1,6 @@
 import { VenueDto } from '../../venues/dto/venue.dto';
 
-export interface VenueDetailsDto {
+export class VenueDetailsDto {
   id: number;
   venuesBasicData: VenueDto;
   description: string;

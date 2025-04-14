@@ -10,10 +10,6 @@ import { Type } from 'class-transformer';
 import { VenueDto } from '../../venues/dto/venue.dto';
 
 export class CreateVenueDetailsDto {
-  @IsNumber()
-  @IsNotEmpty()
-  id: number;
-
   @Type(() => VenueDto)
   @IsObject()
   @ValidateNested()

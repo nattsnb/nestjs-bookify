@@ -8,12 +8,9 @@ import {
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { LocationDto } from './location.dto';
+import { VenueDetailsDto } from '../../venuesDetails/dto/venuesDetails.dto';
 
 export class CreateVenueDto {
-  @IsNumber()
-  @IsNotEmpty()
-  id: number;
-
   @Type(() => LocationDto)
   @IsObject()
   @ValidateNested()
@@ -43,4 +40,8 @@ export class CreateVenueDto {
   @IsString({ each: true })
   @IsNotEmpty()
   images: string[];
+
+  @ValidateNested()
+  @Type(() => VenueDetailsDto)
+  venueDetails: VenueDetailsDto;
 }

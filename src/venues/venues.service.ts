@@ -7,7 +7,11 @@ export class VenuesService {
   constructor(private readonly prismaService: PrismaService) {}
 
   getAll() {
-    return this.prismaService.venue.findMany();
+    return this.prismaService.venue.findMany({
+      include: {
+        location: true,
+      },
+    });
   }
 
   async create(createVenueData: CreateVenueDto) {

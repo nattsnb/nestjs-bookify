@@ -1,13 +1,20 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateVenueReservationUserDto } from './dto/create-venue-reservation-user.dto';
+import { Prisma } from '@prisma/client';
+import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
 export class VenueReservationUserService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  getAll() {
-    return this.prismaService.venueReservationUser.findMany();
+  async getAll() {
+    const reservations =
+      await this.prismaService.venueReservationUser.findMany();
+    if (!reservations.length) {
+      throw new NotFoundException('No reservations found');
+    }
+    return reservations;
   }
 
   async create(
@@ -17,44 +24,95 @@ export class VenueReservationUserService {
     const { venueId, ...venueReservationUserData } =
       createVenueReservationUserData;
 
-    return await this.prismaService.venueReservationUser.create({
-      data: {
-        venue: { connect: { id: venueId } },
-        user: { connect: { id: userId } },
-        ...venueReservationUserData,
-      },
-    });
+    try {
+      return await this.prismaService.venueReservationUser.create({
+        data: {
+          venue: { connect: { id: venueId } },
+          user: { connect: { id: userId } },
+          ...venueReservationUserData,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException('Venue or user not found');
+      }
+      throw error;
+    }
   }
 
-  getOne(venueRatingUserId: number) {
-    return this.prismaService.venueReservationUser.findUnique({
-      where: {
-        id: venueRatingUserId,
-      },
-    });
+  async getOne(reservationId: number) {
+    const reservation =
+      await this.prismaService.venueReservationUser.findUnique({
+        where: {
+          id: reservationId,
+        },
+      });
+
+    if (!reservation) {
+      throw new NotFoundException(
+        `Reservation with ID ${reservationId} not found`,
+      );
+    }
+
+    return reservation;
   }
 
-  getByVenue(venueId: number) {
-    return this.prismaService.venueReservationUser.findMany({
-      where: {
-        venueId: venueId,
+  async getByVenue(venueId: number) {
+    const reservations = await this.prismaService.venueReservationUser.findMany(
+      {
+        where: {
+          venueId,
+        },
       },
-    });
+    );
+
+    if (!reservations.length) {
+      throw new NotFoundException(
+        `No reservations found for venue with ID ${venueId}`,
+      );
+    }
+
+    return reservations;
   }
 
-  getByUser(userId: number) {
-    return this.prismaService.venueReservationUser.findMany({
-      where: {
-        userId: userId,
+  async getByUser(userId: number) {
+    const reservations = await this.prismaService.venueReservationUser.findMany(
+      {
+        where: {
+          userId,
+        },
       },
-    });
+    );
+
+    if (!reservations.length) {
+      throw new NotFoundException(
+        `No reservations found for user with ID ${userId}`,
+      );
+    }
+
+    return reservations;
   }
 
-  delete(venueRatingUserId: number) {
-    return this.prismaService.venueReservationUser.delete({
-      where: {
-        id: venueRatingUserId,
-      },
-    });
+  async delete(reservationId: number) {
+    try {
+      return await this.prismaService.venueReservationUser.delete({
+        where: {
+          id: reservationId,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException(
+          `Reservation with ID ${reservationId} not found`,
+        );
+      }
+      throw error;
+    }
   }
 }

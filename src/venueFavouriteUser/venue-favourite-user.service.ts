@@ -1,52 +1,100 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
+import { Prisma } from '@prisma/client';
+import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
 export class VenueFavouriteUserService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  getAll() {
-    return this.prismaService.venueFavouriteUser.findMany();
+  async getAll() {
+    const favourites = await this.prismaService.venueFavouriteUser.findMany();
+    if (!favourites.length) {
+      throw new NotFoundException('No favourite venues found');
+    }
+    return favourites;
   }
 
   async create(venueId: number, userId: number) {
-    return await this.prismaService.venueFavouriteUser.create({
-      data: {
-        venue: { connect: { id: venueId } },
-        user: { connect: { id: userId } },
-      },
-    });
+    try {
+      return await this.prismaService.venueFavouriteUser.create({
+        data: {
+          venue: { connect: { id: venueId } },
+          user: { connect: { id: userId } },
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException('Venue or user not found');
+      }
+      throw error;
+    }
   }
 
-  getOne(venueRatingUserId: number) {
-    return this.prismaService.venueFavouriteUser.findUnique({
+  async getOne(venueFavouriteUserId: number) {
+    const favourite = await this.prismaService.venueFavouriteUser.findUnique({
       where: {
-        id: venueRatingUserId,
+        id: venueFavouriteUserId,
       },
     });
+
+    if (!favourite) {
+      throw new NotFoundException(
+        `Favourite with ID ${venueFavouriteUserId} not found`,
+      );
+    }
+
+    return favourite;
   }
 
-  getByVenue(venueId: number) {
-    return this.prismaService.venueFavouriteUser.findMany({
-      where: {
-        venueId: venueId,
-      },
+  async getByVenue(venueId: number) {
+    const favourites = await this.prismaService.venueFavouriteUser.findMany({
+      where: { venueId },
     });
+
+    if (!favourites.length) {
+      throw new NotFoundException(
+        `No favourites found for venue with ID ${venueId}`,
+      );
+    }
+
+    return favourites;
   }
 
-  getByUser(userId: number) {
-    return this.prismaService.venueFavouriteUser.findMany({
-      where: {
-        userId: userId,
-      },
+  async getByUser(userId: number) {
+    const favourites = await this.prismaService.venueFavouriteUser.findMany({
+      where: { userId },
     });
+
+    if (!favourites.length) {
+      throw new NotFoundException(
+        `No favourites found for user with ID ${userId}`,
+      );
+    }
+
+    return favourites;
   }
 
-  delete(venueRatingUserId: number) {
-    return this.prismaService.venueFavouriteUser.delete({
-      where: {
-        id: venueRatingUserId,
-      },
-    });
+  async delete(venueFavouriteUserId: number) {
+    try {
+      return await this.prismaService.venueFavouriteUser.delete({
+        where: {
+          id: venueFavouriteUserId,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException(
+          `Favourite with ID ${venueFavouriteUserId} not found`,
+        );
+      }
+      throw error;
+    }
   }
 }

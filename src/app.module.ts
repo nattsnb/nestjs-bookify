@@ -1,10 +1,11 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import * as Joi from 'joi';
-import { VenuesAmenitiesModule } from './venuesAmenities/venuesAmenities.module';
-import { VenuesDetailsModule } from './venuesDetails/venuesDetails.module';
-import { VenuesModule } from './venues/venues.module';
 import { AuthenticationModule } from './authentication/authentication.module';
+import { OccasionModule } from './occasion/occasion.module';
+import { VenueModule } from './venue/venue.module';
+import { CategoryModule } from './category/category.module';
+import { AmenityModule } from './amenity/amenity.module';
 
 @Module({
   imports: [
@@ -15,9 +16,10 @@ import { AuthenticationModule } from './authentication/authentication.module';
         JWT_EXPIRATION_TIME: Joi.number().required(),
       }),
     }),
-    VenuesAmenitiesModule,
-    VenuesModule,
-    VenuesDetailsModule,
+    VenueModule,
+    OccasionModule,
+    CategoryModule,
+    AmenityModule,
     AuthenticationModule,
   ],
 })

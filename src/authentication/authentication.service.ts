@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
-import { UsersService } from '../users/users.service';
+import { UsersService } from '../user/users.service';
 import * as bcrypt from 'bcrypt';
 import { WrongCredentialsException } from './wrong-credentials-exception';
 import { LogInDto } from './dto/log-in.dto';
@@ -22,6 +22,7 @@ export class AuthenticationService {
       name: signUpData.name,
       email: signUpData.email,
       password: hashedPassword,
+      phoneNumber: signUpData.phoneNumber,
     });
   }
 

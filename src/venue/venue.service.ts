@@ -16,13 +16,13 @@ export class VenueService {
     });
   }
 
-  async create(createVenueData: CreateVenueDto) {
-    const { amenitiesIds, ownerId, ...venueData } = createVenueData;
+  async create(createVenueData: CreateVenueDto, userId: number) {
+    const { amenitiesIds, ...venueData } = createVenueData;
 
     return await this.prismaService.venue.create({
       data: {
         ...venueData,
-        owner: { connect: { id: ownerId } },
+        owner: { connect: { id: userId } },
         amenities: amenitiesIds?.length
           ? { connect: amenitiesIds.map((id) => ({ id })) }
           : undefined,

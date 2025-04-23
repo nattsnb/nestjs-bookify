@@ -85,10 +85,6 @@ export class CreateVenueDto {
   @IsNotEmpty()
   city: string;
 
-  @IsInt()
-  @IsNotEmpty()
-  ownerId: number;
-
   @IsOptional()
   @IsArray()
   @IsInt({ each: true })

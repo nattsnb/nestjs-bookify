@@ -7,10 +7,14 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Req,
+  UseGuards,
 } from '@nestjs/common';
 import { VenueService } from './venue.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
 import { UpdateVenueDto } from './dto/update-venue.dto';
+import { JwtAuthenticationGuard } from '../authentication/jwt-authentication.guard';
+import { RequestWithUser } from '../authentication/request-with-user';
 
 @Controller('venue')
 export class VenueController {
@@ -22,8 +26,12 @@ export class VenueController {
   }
 
   @Post()
-  create(@Body() createVenueData: CreateVenueDto) {
-    return this.venueService.create(createVenueData);
+  @UseGuards(JwtAuthenticationGuard)
+  create(
+    @Body() createVenueData: CreateVenueDto,
+    @Req() request: RequestWithUser,
+  ) {
+    return this.venueService.create(createVenueData, request.user.id);
   }
 
   @Get(':id')

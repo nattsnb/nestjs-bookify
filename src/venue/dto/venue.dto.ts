@@ -8,8 +8,8 @@ export class VenueDto {
   capacity: number;
   amountsOfBeds: number;
   extraSleepingDetails: string;
-  checkInHourPM: number;
-  checkOutHourAM: number;
+  checkInHour: number;
+  checkOutHour: number;
   distanceFromCityCenterInM: number;
   facebookUrl: string;
   instagramUrl: string;

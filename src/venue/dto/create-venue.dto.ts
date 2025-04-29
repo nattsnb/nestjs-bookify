@@ -43,11 +43,11 @@ export class CreateVenueDto {
 
   @IsInt()
   @IsNotEmpty()
-  checkInHourPM: number;
+  checkInHour: number;
 
   @IsInt()
   @IsNotEmpty()
-  checkOutHourAM: number;
+  checkOutHour: number;
 
   @IsInt()
   @IsNotEmpty()

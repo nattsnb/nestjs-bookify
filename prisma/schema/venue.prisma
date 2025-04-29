@@ -8,8 +8,8 @@ model Venue {
   name                      String
   images                    Json
   description               String
-  checkInHourPM             Int
-  checkOutHourAM            Int
+  checkInHour               Int
+  checkOutHour              Int
   distanceFromCityCenterInM Int
   facebookUrl               String
   instagramUrl              String

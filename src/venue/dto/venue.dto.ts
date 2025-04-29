@@ -10,7 +10,7 @@ export class VenueDto {
   extraSleepingDetails: string;
   checkInHour: number;
   checkOutHour: number;
-  distanceFromCityCenterInM: number;
+  distanceFromCityCenterInMeters: number;
   facebookUrl: string;
   instagramUrl: string;
   twitterUrl: string;

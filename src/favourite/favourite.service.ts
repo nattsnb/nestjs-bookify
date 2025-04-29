@@ -4,11 +4,11 @@ import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
-export class VenueFavouriteUserService {
+export class FavouriteService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAll() {
-    const favourites = await this.prismaService.venueFavouriteUser.findMany();
+    const favourites = await this.prismaService.favourite.findMany();
     if (!favourites.length) {
       throw new NotFoundException('No favourite venues found');
     }
@@ -17,7 +17,7 @@ export class VenueFavouriteUserService {
 
   async create(venueId: number, userId: number) {
     try {
-      return await this.prismaService.venueFavouriteUser.create({
+      return await this.prismaService.favourite.create({
         data: {
           venue: { connect: { id: venueId } },
           user: { connect: { id: userId } },
@@ -35,7 +35,7 @@ export class VenueFavouriteUserService {
   }
 
   async getOne(venueFavouriteUserId: number) {
-    const favourite = await this.prismaService.venueFavouriteUser.findUnique({
+    const favourite = await this.prismaService.favourite.findUnique({
       where: {
         id: venueFavouriteUserId,
       },
@@ -51,7 +51,7 @@ export class VenueFavouriteUserService {
   }
 
   async getByVenue(venueId: number) {
-    const favourites = await this.prismaService.venueFavouriteUser.findMany({
+    const favourites = await this.prismaService.favourite.findMany({
       where: { venueId },
     });
 
@@ -65,7 +65,7 @@ export class VenueFavouriteUserService {
   }
 
   async getByUser(userId: number) {
-    const favourites = await this.prismaService.venueFavouriteUser.findMany({
+    const favourites = await this.prismaService.favourite.findMany({
       where: { userId },
     });
 
@@ -80,7 +80,7 @@ export class VenueFavouriteUserService {
 
   async delete(venueFavouriteUserId: number) {
     try {
-      return await this.prismaService.venueFavouriteUser.delete({
+      return await this.prismaService.favourite.delete({
         where: {
           id: venueFavouriteUserId,
         },

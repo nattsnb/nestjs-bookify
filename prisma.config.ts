@@ -4,6 +4,6 @@ import { config } from 'dotenv';
 config();
 
 export default defineConfig({
-  schema: './prisma/schema/schema.prisma',
+  schema: './prisma/schema',
   earlyAccess: true,
 });

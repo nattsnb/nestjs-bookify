@@ -1,6 +1,6 @@
-import { StatusEnum } from '@prisma/client';
+import { StatusEnum } from '.prisma/client';
 
-export class VenueReservationUserDto {
+export class ReservationDto {
   id: number;
   dateStart: Date;
   dateEnd: Date;

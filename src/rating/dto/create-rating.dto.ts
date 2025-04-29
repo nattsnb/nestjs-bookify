@@ -6,7 +6,7 @@ import {
   IsOptional,
 } from 'class-validator';
 
-export class CreateVenueRatingUserDto {
+export class CreateRatingDto {
   @IsInt()
   @IsNotEmpty()
   venueId: number;
@@ -19,4 +19,8 @@ export class CreateVenueRatingUserDto {
   @IsString()
   @IsNotEmpty({ message: 'Review cannot be an empty string if provided' })
   review?: string;
+
+  @IsInt()
+  @IsNotEmpty()
+  reservationId: number;
 }

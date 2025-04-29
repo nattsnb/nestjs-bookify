@@ -51,7 +51,7 @@ export class CreateVenueDto {
 
   @IsInt()
   @IsNotEmpty()
-  distanceFromCityCenterInM: number;
+  distanceFromCityCenterInMeters: number;
 
   @IsString()
   @IsOptional()

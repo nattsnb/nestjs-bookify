@@ -8,7 +8,7 @@ import {
 } from 'class-validator';
 import { StatusEnum } from '@prisma/client';
 
-export class CreateVenueReservationUserDto {
+export class CreateReservationDto {
   @IsInt()
   @IsNotEmpty()
   venueId: number;

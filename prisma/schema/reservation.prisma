@@ -1,4 +1,4 @@
-model VenueReservationUser {
+model Reservation {
   id        Int        @id @default(autoincrement())
   venue     Venue      @relation(fields: [venueId], references: [id])
   venueId   Int
@@ -7,6 +7,7 @@ model VenueReservationUser {
   dateStart DateTime
   dateEnd   DateTime
   status    StatusEnum
+  rating    Rating?
 }
 
 enum StatusEnum {

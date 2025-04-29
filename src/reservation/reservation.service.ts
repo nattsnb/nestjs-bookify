@@ -1,35 +1,30 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { CreateVenueReservationUserDto } from './dto/create-venue-reservation-user.dto';
+import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
-export class VenueReservationUserService {
+export class ReservationService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAll() {
-    const reservations =
-      await this.prismaService.venueReservationUser.findMany();
+    const reservations = await this.prismaService.reservation.findMany();
     if (!reservations.length) {
       throw new NotFoundException('No reservations found');
     }
     return reservations;
   }
 
-  async create(
-    createVenueReservationUserData: CreateVenueReservationUserDto,
-    userId: number,
-  ) {
-    const { venueId, ...venueReservationUserData } =
-      createVenueReservationUserData;
+  async create(createReservationData: CreateReservationDto, userId: number) {
+    const { venueId, ...reservationData } = createReservationData;
 
     try {
-      return await this.prismaService.venueReservationUser.create({
+      return await this.prismaService.reservation.create({
         data: {
           venue: { connect: { id: venueId } },
           user: { connect: { id: userId } },
-          ...venueReservationUserData,
+          ...reservationData,
         },
       });
     } catch (error) {
@@ -44,12 +39,11 @@ export class VenueReservationUserService {
   }
 
   async getOne(reservationId: number) {
-    const reservation =
-      await this.prismaService.venueReservationUser.findUnique({
-        where: {
-          id: reservationId,
-        },
-      });
+    const reservation = await this.prismaService.reservation.findUnique({
+      where: {
+        id: reservationId,
+      },
+    });
 
     if (!reservation) {
       throw new NotFoundException(
@@ -61,13 +55,11 @@ export class VenueReservationUserService {
   }
 
   async getByVenue(venueId: number) {
-    const reservations = await this.prismaService.venueReservationUser.findMany(
-      {
-        where: {
-          venueId,
-        },
+    const reservations = await this.prismaService.reservation.findMany({
+      where: {
+        venueId,
       },
-    );
+    });
 
     if (!reservations.length) {
       throw new NotFoundException(
@@ -79,13 +71,11 @@ export class VenueReservationUserService {
   }
 
   async getByUser(userId: number) {
-    const reservations = await this.prismaService.venueReservationUser.findMany(
-      {
-        where: {
-          userId,
-        },
+    const reservations = await this.prismaService.reservation.findMany({
+      where: {
+        userId,
       },
-    );
+    });
 
     if (!reservations.length) {
       throw new NotFoundException(
@@ -98,7 +88,7 @@ export class VenueReservationUserService {
 
   async delete(reservationId: number) {
     try {
-      return await this.prismaService.venueReservationUser.delete({
+      return await this.prismaService.reservation.delete({
         where: {
           id: reservationId,
         },

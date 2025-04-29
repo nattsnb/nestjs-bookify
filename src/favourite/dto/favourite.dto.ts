@@ -1,4 +1,4 @@
-export class VenueFavouriteUserDto {
+export class FavouriteDto {
   id: number;
   venueId: number;
   userId: number;

@@ -9,44 +9,42 @@ import {
   Req,
   UseGuards,
 } from '@nestjs/common';
-import { VenueFavouriteUserService } from './venue-favourite-user.service';
+import { FavouriteService } from './favourite.service';
 import { JwtAuthenticationGuard } from '../authentication/jwt-authentication.guard';
 import { RequestWithUser } from '../authentication/request-with-user';
 
-@Controller('venue-reservation-user')
-export class VenueFavouriteUserController {
-  constructor(
-    private readonly venueReservationUserService: VenueFavouriteUserService,
-  ) {}
+@Controller('favourite')
+export class FavouriteController {
+  constructor(private readonly favouriteService: FavouriteService) {}
 
   @Get()
   getAll() {
-    return this.venueReservationUserService.getAll();
+    return this.favouriteService.getAll();
   }
 
   @Get('user/:id')
   getByUser(@Param('id', ParseIntPipe) id: number) {
-    return this.venueReservationUserService.getByUser(id);
+    return this.favouriteService.getByUser(id);
   }
 
   @Get('venue/:id')
   getByVenue(@Param('id', ParseIntPipe) id: number) {
-    return this.venueReservationUserService.getByVenue(id);
+    return this.favouriteService.getByVenue(id);
   }
 
   @Get(':id')
   getOne(@Param('id', ParseIntPipe) id: number) {
-    return this.venueReservationUserService.getOne(id);
+    return this.favouriteService.getOne(id);
   }
 
   @Post()
   @UseGuards(JwtAuthenticationGuard)
   create(@Body() venueId: number, @Req() request: RequestWithUser) {
-    return this.venueReservationUserService.create(venueId, request.user.id);
+    return this.favouriteService.create(venueId, request.user.id);
   }
 
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
-    return this.venueReservationUserService.delete(id);
+    return this.favouriteService.delete(id);
   }
 }

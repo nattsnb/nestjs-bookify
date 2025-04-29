@@ -1,32 +1,28 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
-import { CreateVenueRatingUserDto } from './dto/create-venue-rating-user.dto';
+import { CreateRatingDto } from './dto/create-rating.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
-export class VenueRatingUserService {
+export class RatingService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAll() {
-    const ratings = await this.prismaService.venueRatingUser.findMany();
+    const ratings = await this.prismaService.rating.findMany();
     if (!ratings.length) {
       throw new NotFoundException('No ratings found');
     }
     return ratings;
   }
 
-  async create(
-    createVenueRatingUserData: CreateVenueRatingUserDto,
-    userId: number,
-  ) {
-    const { venueId, ...venueRatingUserData } = createVenueRatingUserData;
+  async create(createRatingData: CreateRatingDto) {
+    const { reservationId, ...venueRatingUserData } = createRatingData;
 
     try {
-      return await this.prismaService.venueRatingUser.create({
+      return await this.prismaService.rating.create({
         data: {
-          venue: { connect: { id: venueId } },
-          user: { connect: { id: userId } },
+          reservation: { connect: { id: reservationId } },
           ...venueRatingUserData,
         },
       });
@@ -35,31 +31,33 @@ export class VenueRatingUserService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === PrismaError.RecordDoesNotExist
       ) {
-        throw new NotFoundException('Venue or user not found');
+        throw new NotFoundException('Reservation not found');
       }
       throw error;
     }
   }
 
-  async getOne(venueRatingUserId: number) {
-    const rating = await this.prismaService.venueRatingUser.findUnique({
+  async getOne(ratingId: number) {
+    const rating = await this.prismaService.rating.findUnique({
       where: {
-        id: venueRatingUserId,
+        id: ratingId,
       },
     });
 
     if (!rating) {
-      throw new NotFoundException(
-        `Rating with ID ${venueRatingUserId} not found`,
-      );
+      throw new NotFoundException(`Rating with ID ${ratingId} not found`);
     }
 
     return rating;
   }
 
   async getByVenue(venueId: number) {
-    const ratings = await this.prismaService.venueRatingUser.findMany({
-      where: { venueId },
+    const ratings = await this.prismaService.rating.findMany({
+      where: {
+        reservation: {
+          venueId: venueId,
+        },
+      },
     });
 
     if (!ratings.length) {
@@ -72,8 +70,12 @@ export class VenueRatingUserService {
   }
 
   async getByUser(userId: number) {
-    const ratings = await this.prismaService.venueRatingUser.findMany({
-      where: { userId },
+    const ratings = await this.prismaService.rating.findMany({
+      where: {
+        reservation: {
+          userId: userId,
+        },
+      },
     });
 
     if (!ratings.length) {
@@ -85,11 +87,11 @@ export class VenueRatingUserService {
     return ratings;
   }
 
-  async delete(venueRatingUserId: number) {
+  async delete(ratingId: number) {
     try {
-      return await this.prismaService.venueRatingUser.delete({
+      return await this.prismaService.rating.delete({
         where: {
-          id: venueRatingUserId,
+          id: ratingId,
         },
       });
     } catch (error) {
@@ -97,9 +99,7 @@ export class VenueRatingUserService {
         error instanceof Prisma.PrismaClientKnownRequestError &&
         error.code === PrismaError.RecordDoesNotExist
       ) {
-        throw new NotFoundException(
-          `Rating with ID ${venueRatingUserId} not found`,
-        );
+        throw new NotFoundException(`Rating with ID ${ratingId} not found`);
       }
       throw error;
     }

@@ -1,9 +1,0 @@
-model VenueRatingUser {
-  id      Int     @id @default(autoincrement())
-  venue   Venue   @relation(fields: [venueId], references: [id])
-  venueId Int
-  user    User    @relation(fields: [userId], references: [id])
-  userId  Int
-  score   Float
-  review  String?
-}

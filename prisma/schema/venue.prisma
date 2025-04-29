@@ -11,10 +11,10 @@ model Venue {
   checkInHour                    Int
   checkOutHour                   Int
   distanceFromCityCenterInMeters Int
-  facebookUrl                    String
-  instagramUrl                   String
-  twitterUrl                     String
-  websiteUrl                     String
+  facebookUrl                    String?
+  instagramUrl                   String?
+  twitterUrl                     String?
+  websiteUrl                     String?
   streetNumber                   String
   streetName                     String
   postalCode                     String

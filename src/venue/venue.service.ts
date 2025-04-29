@@ -23,11 +23,22 @@ export class VenueService {
   }
 
   async create(createVenueData: CreateVenueDto, userId: number) {
-    const { amenitiesIds, ...venueData } = createVenueData;
+    const {
+      amenitiesIds,
+      facebookUrl,
+      instagramUrl,
+      twitterUrl,
+      websiteUrl,
+      ...venueData
+    } = createVenueData;
     try {
       const newVenue = await this.prismaService.venue.create({
         data: {
           ...venueData,
+          facebookUrl: facebookUrl ?? undefined,
+          instagramUrl: instagramUrl ?? undefined,
+          twitterUrl: twitterUrl ?? undefined,
+          websiteUrl: websiteUrl ?? undefined,
           owner: { connect: { id: userId } },
           amenities: amenitiesIds?.length
             ? { connect: amenitiesIds.map((id) => ({ id })) }

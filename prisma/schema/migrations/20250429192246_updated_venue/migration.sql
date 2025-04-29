@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE "Venue" ALTER COLUMN "facebookUrl" DROP NOT NULL,
+ALTER COLUMN "instagramUrl" DROP NOT NULL,
+ALTER COLUMN "twitterUrl" DROP NOT NULL,
+ALTER COLUMN "websiteUrl" DROP NOT NULL;

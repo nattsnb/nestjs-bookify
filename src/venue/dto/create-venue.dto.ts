@@ -55,19 +55,19 @@ export class CreateVenueDto {
 
   @IsString()
   @IsOptional()
-  facebookUrl: string;
+  facebookUrl?: string | null;
 
   @IsString()
   @IsOptional()
-  instagramUrl: string;
+  instagramUrl?: string | null;
 
   @IsString()
   @IsOptional()
-  twitterUrl: string;
+  twitterUrl?: string | null;
 
   @IsString()
   @IsOptional()
-  websiteUrl: string;
+  websiteUrl?: string | null;
 
   @IsString()
   @IsNotEmpty()

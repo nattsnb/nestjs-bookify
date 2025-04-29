@@ -1,56 +1,98 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateAmenityDto } from './dto/create-amenity.dto';
 import { UpdateAmenityDto } from './dto/update-amenity.dto';
-import { connect } from 'rxjs';
+import { Prisma } from '@prisma/client';
+import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
 export class AmenityService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  getAll() {
-    return this.prismaService.amenity.findMany();
+  async getAll() {
+    const amenities = await this.prismaService.amenity.findMany();
+    if (!amenities.length) {
+      throw new NotFoundException('No amenities found');
+    }
+    return amenities;
   }
 
   async create(createAmenityData: CreateAmenityDto) {
     const { name, categoryId } = createAmenityData;
 
-    return await this.prismaService.amenity.create({
-      data: {
-        name,
-        category: {
-          connect: { id: categoryId },
+    try {
+      return await this.prismaService.amenity.create({
+        data: {
+          name,
+          category: {
+            connect: { id: categoryId },
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException('Category not found');
+      }
+      throw error;
+    }
   }
 
-  getOne(amenityId: number) {
-    return this.prismaService.amenity.findUnique({
+  async getOne(amenityId: number) {
+    const amenity = await this.prismaService.amenity.findUnique({
       where: {
         id: amenityId,
       },
     });
+
+    if (!amenity) {
+      throw new NotFoundException(`Amenity with ID ${amenityId} not found`);
+    }
+
+    return amenity;
   }
 
-  update(amenityId: number, updateAmenityData: UpdateAmenityDto) {
+  async update(amenityId: number, updateAmenityData: UpdateAmenityDto) {
     const { name, categoryId } = updateAmenityData;
-    return this.prismaService.amenity.update({
-      where: { id: amenityId },
-      data: {
-        name,
-        category: {
-          connect: { id: categoryId },
+
+    try {
+      return await this.prismaService.amenity.update({
+        where: { id: amenityId },
+        data: {
+          name,
+          category: {
+            connect: { id: categoryId },
+          },
         },
-      },
-    });
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException('Amenity or category not found');
+      }
+      throw error;
+    }
   }
 
-  delete(amenityId: number) {
-    return this.prismaService.amenity.delete({
-      where: {
-        id: amenityId,
-      },
-    });
+  async delete(amenityId: number) {
+    try {
+      return await this.prismaService.amenity.delete({
+        where: {
+          id: amenityId,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException(`Amenity with ID ${amenityId} not found`);
+      }
+      throw error;
+    }
   }
 }

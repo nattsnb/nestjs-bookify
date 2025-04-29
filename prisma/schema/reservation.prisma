@@ -12,6 +12,5 @@ model Reservation {
 
 enum StatusEnum {
   RESERVED
-  IN_PROGRESS
   COMPLETED
 }

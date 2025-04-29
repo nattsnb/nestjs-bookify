@@ -1,0 +1,16 @@
+model VenueReservationUser {
+  id        Int        @id @default(autoincrement())
+  venue     Venue      @relation(fields: [venueId], references: [id])
+  venueId   Int
+  user      User       @relation(fields: [userId], references: [id])
+  userId    Int
+  dateStart DateTime
+  dateEnd   DateTime
+  status    StatusEnum
+}
+
+enum StatusEnum {
+  RESERVED
+  IN_PROGRESS
+  COMPLETED
+}

@@ -16,12 +16,15 @@ import { JwtAuthenticationGuard } from './jwt-authentication.guard';
 import { RequestWithUser } from './request-with-user';
 import { AuthenticationResponseDto } from './dto/authentication-response.dto';
 import { TransformPlainToInstance } from 'class-transformer';
+import { ApiBody, ApiTags } from '@nestjs/swagger';
 
+@ApiTags('Authentication')
 @Controller('authentication')
 export class AuthenticationController {
   constructor(private readonly authenticationService: AuthenticationService) {}
 
   @Post('sign-up')
+  @ApiBody({ type: SignUpDto })
   @TransformPlainToInstance(AuthenticationResponseDto)
   async signUp(@Body() signUpData: SignUpDto) {
     return this.authenticationService.signUp(signUpData);
@@ -29,6 +32,7 @@ export class AuthenticationController {
 
   @HttpCode(200)
   @Post('log-in')
+  @ApiBody({ type: LogInDto })
   @TransformPlainToInstance(AuthenticationResponseDto)
   async logIn(
     @Body() logInData: LogInDto,

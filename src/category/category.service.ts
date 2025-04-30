@@ -20,24 +20,29 @@ export class CategoryService {
   async create(createCategoryData: CreateCategoryDto) {
     const { name, amenities } = createCategoryData;
 
-    try {
-      return await this.prismaService.category.create({
-        data: {
-          name,
-          amenities: amenities?.length
-            ? { connect: amenities.map((id) => ({ id })) }
-            : undefined,
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === PrismaError.RecordDoesNotExist
-      ) {
-        throw new NotFoundException('One or more amenities not found');
+    const invalidAmenityIds = [];
+
+    if (amenities) {
+      for (const id of amenities) {
+        const amenity = await this.prismaService.amenity.findUnique({
+          where: { id },
+        });
+        if (!amenity) invalidAmenityIds.push(id);
       }
-      throw error;
     }
+    if (invalidAmenityIds.length) {
+      throw new NotFoundException(
+        `Invalid amenity IDs: ${invalidAmenityIds.join(', ')}`,
+      );
+    }
+    return this.prismaService.category.create({
+      data: {
+        name,
+        amenities: amenities?.length
+          ? { connect: amenities.map((id) => ({ id })) }
+          : undefined,
+      },
+    });
   }
 
   async getOne(categoryId: number) {

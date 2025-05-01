@@ -8,6 +8,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   Res,
   UseGuards,
@@ -58,5 +59,19 @@ export class VenueController {
   @Head()
   headRoute(@Res() response: Response) {
     return response.status(200).send();
+  }
+
+  @Get('filter')
+  filterByAmenitiesAndOccasions(
+    @Query('amenities') amenities: string,
+    @Query('occasions') occasions: string,
+  ) {
+    const amenityIds = amenities
+      ? amenities.split(',').map((id) => parseInt(id.trim(), 10))
+      : [];
+    const occasionIds = occasions
+      ? occasions.split(',').map((id) => parseInt(id.trim(), 10))
+      : [];
+    return this.venueService.filterCombined(amenityIds, occasionIds);
   }
 }

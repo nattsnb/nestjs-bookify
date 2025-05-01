@@ -115,4 +115,45 @@ export class VenueService {
       throw error;
     }
   }
+
+  async filterByAmenity(amenityIds: number[]) {
+    const venues = await this.prismaService.venue.findMany({
+      include: { amenities: { select: { id: true } } },
+    });
+    const filtered = venues.filter((venue) => {
+      const venueAmenityIds = venue.amenities.map((amenity) => amenity.id);
+      return amenityIds.every((id) => venueAmenityIds.includes(id));
+    });
+    if (filtered.length === 0) {
+      throw new NotFoundException(
+        `No venues found matching all amenities: [${amenityIds.join(', ')}]`,
+      );
+    }
+    return filtered;
+  }
+
+  async filterCombined(amenityIds: number[], occasionIds: number[]) {
+    let allAmenityIds = [...amenityIds];
+
+    if (occasionIds.length > 0) {
+      const occasions = await this.prismaService.occasion.findMany({
+        where: { id: { in: occasionIds } },
+        include: { amenities: true },
+      });
+
+      if (occasions.length === 0) {
+        throw new NotFoundException(
+          `No occasions found for IDs: [${occasionIds.join(', ')}]`,
+        );
+      }
+
+      const occasionAmenityIds = occasions
+        .flatMap((o) => o.amenities.map((a) => a.id))
+        .filter((value, index, self) => self.indexOf(value) === index);
+
+      allAmenityIds = [...new Set([...allAmenityIds, ...occasionAmenityIds])];
+    }
+
+    return this.filterByAmenity(allAmenityIds);
+  }
 }

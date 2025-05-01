@@ -4,9 +4,8 @@ import {
   IsInt,
   IsOptional,
   IsDate,
-  IsEnum,
+  IsBoolean,
 } from 'class-validator';
-import { StatusEnum } from '@prisma/client';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateReservationDto {
@@ -35,13 +34,12 @@ export class CreateReservationDto {
   dateEnd: Date;
 
   @ApiProperty({
-    description: 'Status of the reservation',
-    enum: StatusEnum,
-    example: StatusEnum.RESERVED,
+    description: 'Is the reservation active',
+    example: true,
   })
-  @IsEnum(StatusEnum)
+  @IsBoolean()
   @IsNotEmpty()
-  status: StatusEnum;
+  isActive: boolean;
 
   @ApiPropertyOptional({
     description: 'Optional review for the reservation',

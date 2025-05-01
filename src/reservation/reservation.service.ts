@@ -3,6 +3,7 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
+import { UpdateAmenityDto } from '../amenity/dto/update-amenity.dto';
 
 @Injectable()
 export class ReservationService {
@@ -101,6 +102,31 @@ export class ReservationService {
         throw new NotFoundException(
           `Reservation with ID ${reservationId} not found`,
         );
+      }
+      throw error;
+    }
+  }
+
+  async changeIsActive(reservationId: number) {
+    try {
+      const reservation = await this.prismaService.reservation.findUnique({
+        where: { id: reservationId },
+      });
+      if (!reservation) {
+        throw new NotFoundException('Reservation not found');
+      }
+      return await this.prismaService.reservation.update({
+        where: { id: reservationId },
+        data: {
+          isActive: !reservation.isActive,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException('Reservation not found');
       }
       throw error;
     }

@@ -91,7 +91,7 @@ export class CreateVenueDto {
   })
   @IsString()
   @IsOptional()
-  facebookUrl?: string | null;
+  facebookUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Instagram profile URL',
@@ -99,7 +99,7 @@ export class CreateVenueDto {
   })
   @IsString()
   @IsOptional()
-  instagramUrl?: string | null;
+  instagramUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Twitter profile URL',
@@ -107,7 +107,7 @@ export class CreateVenueDto {
   })
   @IsString()
   @IsOptional()
-  twitterUrl?: string | null;
+  twitterUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Official website URL',
@@ -115,7 +115,7 @@ export class CreateVenueDto {
   })
   @IsString()
   @IsOptional()
-  websiteUrl?: string | null;
+  websiteUrl?: string;
 
   @ApiProperty({ description: 'Street number of the venue', example: '25B' })
   @IsString()
@@ -145,6 +145,11 @@ export class CreateVenueDto {
   @IsString()
   @IsNotEmpty()
   city: string;
+
+  @ApiProperty({ description: 'ID of the owner', example: 42 })
+  @IsInt()
+  @IsNotEmpty()
+  ownerId: number;
 
   @ApiPropertyOptional({
     description: 'IDs of associated amenities',

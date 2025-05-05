@@ -146,11 +146,6 @@ export class CreateVenueDto {
   @IsNotEmpty()
   city: string;
 
-  @ApiProperty({ description: 'ID of the owner', example: 42 })
-  @IsInt()
-  @IsNotEmpty()
-  ownerId: number;
-
   @ApiPropertyOptional({
     description: 'IDs of associated amenities',
     example: [1, 3, 7],

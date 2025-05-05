@@ -15,8 +15,6 @@ import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { JwtAuthenticationGuard } from '../authentication/jwt-authentication.guard';
 import { RequestWithUser } from '../authentication/request-with-user';
-import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
-import { ReservationDto } from './dto/reservation.dto';
 
 @Controller('reservation')
 export class ReservationController {

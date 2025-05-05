@@ -5,6 +5,7 @@ import {
   Get,
   Head,
   Param,
+  ParseArrayPipe,
   ParseIntPipe,
   Patch,
   Post,
@@ -12,6 +13,7 @@ import {
   Req,
   Res,
   UseGuards,
+  ValidationPipe,
 } from '@nestjs/common';
 import { VenueService } from './venue.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
@@ -19,6 +21,8 @@ import { UpdateVenueDto } from './dto/update-venue.dto';
 import { JwtAuthenticationGuard } from '../authentication/jwt-authentication.guard';
 import { RequestWithUser } from '../authentication/request-with-user';
 import { Response } from 'express';
+import { VenueFilterDto } from './dto/venue-filter.dto';
+import { ApiQuery } from '@nestjs/swagger';
 
 @Controller('venue')
 export class VenueController {
@@ -62,16 +66,10 @@ export class VenueController {
   }
 
   @Get('filter')
-  filterByAmenitiesAndOccasions(
-    @Query('amenities') amenities: string,
-    @Query('occasions') occasions: string,
-  ) {
-    const amenityIds = amenities
-      ? amenities.split(',').map((id) => parseInt(id.trim(), 10))
-      : [];
-    const occasionIds = occasions
-      ? occasions.split(',').map((id) => parseInt(id.trim(), 10))
-      : [];
-    return this.venueService.filterCombined(amenityIds, occasionIds);
+  filterByAmenitiesAndOccasions(@Query() filterDto: VenueFilterDto) {
+    return this.venueService.filterCombined(
+      filterDto.amenities ?? [],
+      filterDto.occasions ?? [],
+    );
   }
 }

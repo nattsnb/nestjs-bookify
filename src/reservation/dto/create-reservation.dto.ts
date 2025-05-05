@@ -32,21 +32,4 @@ export class CreateReservationDto {
   @IsDate()
   @IsNotEmpty()
   dateEnd: Date;
-
-  @ApiProperty({
-    description: 'Is the reservation active',
-    example: true,
-  })
-  @IsBoolean()
-  @IsNotEmpty()
-  isActive: boolean;
-
-  @ApiPropertyOptional({
-    description: 'Optional review for the reservation',
-    example: 'Everything went smoothly and the place was great!',
-  })
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty({ message: 'Review cannot be an empty if provided' })
-  review?: string;
 }

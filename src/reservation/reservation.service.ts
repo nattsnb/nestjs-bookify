@@ -42,6 +42,7 @@ export class ReservationService {
           user: { connect: { id: userId } },
           dateEnd: dateEnd,
           dateStart: dateStart,
+          isActive: true,
           ...reservationData,
         },
       });

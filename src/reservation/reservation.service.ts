@@ -25,6 +25,7 @@ export class ReservationService {
         data: {
           venue: { connect: { id: venueId } },
           user: { connect: { id: userId } },
+          isActive: true,
           ...reservationData,
         },
       });

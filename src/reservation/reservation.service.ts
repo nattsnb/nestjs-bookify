@@ -8,6 +8,7 @@ import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
 import { UpdateAmenityDto } from '../amenity/dto/update-amenity.dto';
+import * as dayjs from 'dayjs';
 
 @Injectable()
 export class ReservationService {
@@ -165,5 +166,35 @@ export class ReservationService {
     }
 
     return { available: true };
+  }
+
+  async getOccupiedDates(venueId: number) {
+    const reservations = await this.prismaService.reservation.findMany({
+      where: {
+        venueId,
+        isActive: true,
+      },
+      select: {
+        dateStart: true,
+        dateEnd: true,
+      },
+    });
+
+    const occupied: string[] = [];
+
+    for (const reservation of reservations) {
+      let current = dayjs(reservation.dateStart);
+      const end = dayjs(reservation.dateEnd);
+
+      while (current.isBefore(end, 'day')) {
+        const dateAsString = current.format('YYYY-MM-DD');
+        if (!occupied.includes(dateAsString)) {
+          occupied.push(dateAsString);
+        }
+        current = current.add(1, 'day');
+      }
+    }
+
+    return occupied.sort();
   }
 }

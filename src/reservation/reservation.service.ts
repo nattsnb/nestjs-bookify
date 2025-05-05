@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Prisma } from '@prisma/client';
@@ -18,13 +22,26 @@ export class ReservationService {
   }
 
   async create(createReservationData: CreateReservationDto, userId: number) {
-    const { venueId, ...reservationData } = createReservationData;
+    const { venueId, dateStart, dateEnd, ...reservationData } =
+      createReservationData;
+
+    const availability = await this.checkAvailability(
+      venueId,
+      dateStart,
+      dateEnd,
+    );
+
+    if (!availability.available) {
+      throw new ConflictException('Selected dates are already reserved.');
+    }
 
     try {
       return await this.prismaService.reservation.create({
         data: {
           venue: { connect: { id: venueId } },
           user: { connect: { id: userId } },
+          dateEnd: dateEnd,
+          dateStart: dateStart,
           ...reservationData,
         },
       });
@@ -130,5 +147,22 @@ export class ReservationService {
       }
       throw error;
     }
+  }
+
+  async checkAvailability(venueId: number, dateStart: Date, dateEnd: Date) {
+    const conflicts = await this.prismaService.reservation.findMany({
+      where: {
+        venueId,
+        isActive: true,
+        dateStart: { lt: dateEnd },
+        dateEnd: { gt: dateStart },
+      },
+    });
+
+    if (conflicts.length > 0) {
+      return { available: false };
+    }
+
+    return { available: true };
   }
 }

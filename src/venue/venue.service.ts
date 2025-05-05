@@ -29,6 +29,7 @@ export class VenueService {
       instagramUrl,
       twitterUrl,
       websiteUrl,
+      ownerId,
       ...venueData
     } = createVenueData;
     try {

@@ -5,6 +5,7 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Req,
   UseGuards,
@@ -13,6 +14,8 @@ import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { JwtAuthenticationGuard } from '../authentication/jwt-authentication.guard';
 import { RequestWithUser } from '../authentication/request-with-user';
+import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
+import { ReservationDto } from './dto/reservation.dto';
 
 @Controller('reservation')
 export class ReservationController {
@@ -53,5 +56,10 @@ export class ReservationController {
   @Delete(':id')
   delete(@Param('id', ParseIntPipe) id: number) {
     return this.reservationService.delete(id);
+  }
+
+  @Patch(':id')
+  update(@Param('id', ParseIntPipe) id: number) {
+    return this.reservationService.changeIsActive(id);
   }
 }

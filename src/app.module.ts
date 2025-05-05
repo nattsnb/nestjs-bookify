@@ -6,6 +6,9 @@ import { OccasionModule } from './occasion/occasion.module';
 import { VenueModule } from './venue/venue.module';
 import { CategoryModule } from './category/category.module';
 import { AmenityModule } from './amenity/amenity.module';
+import { ReservationModule } from './reservation/reservation.module';
+import { FavouriteModule } from './favourite/favourite.module';
+import { RatingModule } from './rating/rating.module';
 
 @Module({
   imports: [
@@ -21,6 +24,9 @@ import { AmenityModule } from './amenity/amenity.module';
     CategoryModule,
     AmenityModule,
     AuthenticationModule,
+    ReservationModule,
+    FavouriteModule,
+    RatingModule,
   ],
 })
 export class AppModule {}

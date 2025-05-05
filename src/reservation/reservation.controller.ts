@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -24,6 +25,26 @@ export class ReservationController {
   @Get()
   getAll() {
     return this.reservationService.getAll();
+  }
+
+  @Get('availability/:id')
+  checkAvailability(
+    @Param('venueId', ParseIntPipe) venueId: number,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    const dateStart = new Date(from);
+    const dateEnd = new Date(to);
+    return this.reservationService.checkAvailability(
+      venueId,
+      dateStart,
+      dateEnd,
+    );
+  }
+
+  @Get('occupied/:id')
+  getOccupiedDates(@Param('id', ParseIntPipe) id: number) {
+    return this.reservationService.getOccupiedDates(id);
   }
 
   @Get('user/:id')

@@ -179,9 +179,7 @@ export class ReservationService {
         dateEnd: true,
       },
     });
-
     const occupied: string[] = [];
-
     for (const reservation of reservations) {
       let current = dayjs(reservation.dateStart);
       const end = dayjs(reservation.dateEnd);
@@ -194,7 +192,6 @@ export class ReservationService {
         current = current.add(1, 'day');
       }
     }
-
     return occupied.sort();
   }
 }

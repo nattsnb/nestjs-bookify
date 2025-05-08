@@ -3,14 +3,6 @@ import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class CreateRatingDto {
   @ApiProperty({
-    description: 'ID of the venue being rated',
-    example: 12,
-  })
-  @IsInt()
-  @IsNotEmpty()
-  venueId: number;
-
-  @ApiProperty({
     description: 'Numerical rating score (e.g. 1–5)',
     example: 4,
   })

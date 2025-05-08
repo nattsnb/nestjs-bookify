@@ -25,7 +25,7 @@ export class ReservationController {
     return this.reservationService.getAll();
   }
 
-  @Get('availability/:id')
+  @Get('availability/:venueId')
   checkAvailability(
     @Param('venueId', ParseIntPipe) venueId: number,
     @Query('from') from: string,

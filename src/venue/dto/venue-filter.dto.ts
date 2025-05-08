@@ -13,7 +13,7 @@ export class VenueFilterDto {
   @Transform(({ value }) =>
     Array.isArray(value)
       ? value.map(Number)
-      : value.split(',').map((v: number) => Number(v)),
+      : value.split(',').map((id: number) => Number(id)),
   )
   @IsInt({ each: true })
   amenities?: number[];
@@ -28,7 +28,7 @@ export class VenueFilterDto {
   @Transform(({ value }) =>
     Array.isArray(value)
       ? value.map(Number)
-      : value.split(',').map((v: number) => Number(v)),
+      : value.split(',').map((id: number) => Number(id)),
   )
   @IsInt({ each: true })
   occasions?: number[];

@@ -9,7 +9,7 @@ import { PrismaError } from '../database/prisma-error.enum';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getByEmail(email: string) {

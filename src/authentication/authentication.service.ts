@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
-import { UsersService } from '../user/users.service';
+import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { WrongCredentialsException } from './wrong-credentials-exception';
 import { LogInDto } from './dto/log-in.dto';
@@ -15,7 +15,7 @@ export class AuthenticationService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly usersService: UsersService,
+    private readonly usersService: UserService,
   ) {}
 
   async signUp(signUpData: SignUpDto) {

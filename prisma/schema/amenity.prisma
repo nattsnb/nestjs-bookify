@@ -1,8 +1,8 @@
 model Amenity {
-  id         Int        @id @default(autoincrement())
-  name       String
-  category   Category   @relation(fields: [categoryId], references: [id])
-  categoryId Int
-  occasions  Occasion[]
-  venues     Venue[]
+  id              Int              @id @default(autoincrement())
+  name            String
+  category        Category         @relation(fields: [categoryId], references: [id])
+  categoryId      Int
+  occasions       Occasion[]
+  amenityToVenues AmenityToVenue[]
 }

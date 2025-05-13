@@ -7,6 +7,8 @@ import { LogInDto } from './dto/log-in.dto';
 import { TokenPayload } from './token-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
+import { RequestWithUser } from './request-with-user';
 
 @Injectable()
 export class AuthenticationService {
@@ -24,6 +26,28 @@ export class AuthenticationService {
       password: hashedPassword,
       phoneNumber: signUpData.phoneNumber,
     });
+  }
+
+  async logIn(logInData: LogInDto, response: Response) {
+    const user = await this.getAuthenticatedUser(logInData);
+    const cookie = this.getCookieWithJwtToken(user.id);
+    response.setHeader('Set-Cookie', cookie);
+    return user;
+  }
+
+  logOut(response: Response) {
+    const cookie = this.getCookieForLogOut();
+    response.setHeader('Set-Cookie', cookie);
+  }
+
+  authenticate(request: RequestWithUser) {
+    return request.user;
+  }
+
+  private async getAuthenticatedUser(logInData: LogInDto) {
+    const user = await this.getUserByEmail(logInData.email);
+    await this.verifyPassword(logInData.password, user.password);
+    return user;
   }
 
   private async getUserByEmail(email: string) {
@@ -50,13 +74,7 @@ export class AuthenticationService {
     }
   }
 
-  async getAuthenticatedUser(logInData: LogInDto) {
-    const user = await this.getUserByEmail(logInData.email);
-    await this.verifyPassword(logInData.password, user.password);
-    return user;
-  }
-
-  getCookieWithJwtToken(userId: number) {
+  private getCookieWithJwtToken(userId: number) {
     const payload: TokenPayload = { userId };
     const token = this.jwtService.sign(payload);
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
@@ -64,7 +82,7 @@ export class AuthenticationService {
     )}`;
   }
 
-  getCookieForLogOut() {
+  private getCookieForLogOut() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
 }

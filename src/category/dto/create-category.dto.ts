@@ -24,5 +24,5 @@ export class CreateCategoryDto {
   @IsArray()
   @IsInt({ each: true })
   @IsOptional()
-  amenities?: number[];
+  amenitiesIds?: number[];
 }

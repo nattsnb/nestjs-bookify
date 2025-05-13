@@ -46,7 +46,13 @@ export class AuthenticationService {
 
   private async getAuthenticatedUser(logInData: LogInDto) {
     const user = await this.getUserByEmail(logInData.email);
-    await this.verifyPassword(logInData.password, user.password);
+    const isPasswordVerified = await this.verifyPassword(
+      logInData.password,
+      user.password,
+    );
+    if (!isPasswordVerified) {
+      throw new WrongCredentialsException();
+    }
     return user;
   }
 
@@ -65,13 +71,7 @@ export class AuthenticationService {
     plainTextPassword: string,
     hashedPassword: string,
   ) {
-    const isPasswordMatching = await bcrypt.compare(
-      plainTextPassword,
-      hashedPassword,
-    );
-    if (!isPasswordMatching) {
-      throw new WrongCredentialsException();
-    }
+    return await bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
   private getCookieWithJwtToken(userId: number) {

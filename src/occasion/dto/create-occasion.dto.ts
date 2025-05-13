@@ -13,9 +13,9 @@ export class CreateOccasionDto {
   @ApiProperty({
     description: 'List of amenity IDs associated with the occasion',
     example: [1, 2, 5],
-    required: false,
+    required: true,
   })
   @IsArray()
   @IsInt({ each: true })
-  amenities?: number[];
+  amenities: number[];
 }

@@ -24,9 +24,7 @@ export class OccasionService {
       return await this.prismaService.occasion.create({
         data: {
           name,
-          amenities: amenities?.length
-            ? { connect: amenities.map((id) => ({ id })) }
-            : undefined,
+          amenities: { connect: amenities.map((id) => ({ id })) },
         },
       });
     } catch (error) {
@@ -57,15 +55,20 @@ export class OccasionService {
   async update(occasionId: number, updateOccasionData: UpdateOccasionDto) {
     const { name, amenities } = updateOccasionData;
 
+    const updateData: any = {
+      name,
+    };
+
+    if (amenities && amenities?.length > 0) {
+      updateData.amenities = {
+        set: amenities.map((id) => ({ id })),
+      };
+    }
+
     try {
       return await this.prismaService.occasion.update({
         where: { id: occasionId },
-        data: {
-          name,
-          amenities: amenities?.length
-            ? { set: amenities.map((id) => ({ id })) }
-            : undefined,
-        },
+        data: updateData,
       });
     } catch (error) {
       if (

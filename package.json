@@ -81,7 +81,7 @@
     ],
     "rootDir": "src",
     "testEnvironment": "node",
-    "testRegex": ".*\\.spec\\.ts$",
+    "testRegex": ".*\\.(spec|test)\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     }

@@ -79,6 +79,6 @@ export class ReservationController {
 
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number) {
-    return this.reservationService.changeIsActive(id);
+    return this.reservationService.changeIsPendingRating(id);
   }
 }

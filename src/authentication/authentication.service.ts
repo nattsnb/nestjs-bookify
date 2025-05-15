@@ -1,19 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
-import { UsersService } from '../user/users.service';
+import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
 import { WrongCredentialsException } from './wrong-credentials-exception';
 import { LogInDto } from './dto/log-in.dto';
 import { TokenPayload } from './token-payload.interface';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
+import { RequestWithUser } from './request-with-user';
 
 @Injectable()
 export class AuthenticationService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
-    private readonly usersService: UsersService,
+    private readonly usersService: UserService,
   ) {}
 
   async signUp(signUpData: SignUpDto) {
@@ -24,6 +26,34 @@ export class AuthenticationService {
       password: hashedPassword,
       phoneNumber: signUpData.phoneNumber,
     });
+  }
+
+  async logIn(logInData: LogInDto, response: Response) {
+    const user = await this.getAuthenticatedUser(logInData);
+    const cookie = this.getCookieWithJwtToken(user.id);
+    response.setHeader('Set-Cookie', cookie);
+    return user;
+  }
+
+  logOut(response: Response) {
+    const cookie = this.getCookieForLogOut();
+    response.setHeader('Set-Cookie', cookie);
+  }
+
+  authenticate(request: RequestWithUser) {
+    return request.user;
+  }
+
+  private async getAuthenticatedUser(logInData: LogInDto) {
+    const user = await this.getUserByEmail(logInData.email);
+    const isPasswordVerified = await this.verifyPassword(
+      logInData.password,
+      user.password,
+    );
+    if (!isPasswordVerified) {
+      throw new WrongCredentialsException();
+    }
+    return user;
   }
 
   private async getUserByEmail(email: string) {
@@ -41,22 +71,10 @@ export class AuthenticationService {
     plainTextPassword: string,
     hashedPassword: string,
   ) {
-    const isPasswordMatching = await bcrypt.compare(
-      plainTextPassword,
-      hashedPassword,
-    );
-    if (!isPasswordMatching) {
-      throw new WrongCredentialsException();
-    }
+    return await bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
-  async getAuthenticatedUser(logInData: LogInDto) {
-    const user = await this.getUserByEmail(logInData.email);
-    await this.verifyPassword(logInData.password, user.password);
-    return user;
-  }
-
-  getCookieWithJwtToken(userId: number) {
+  private getCookieWithJwtToken(userId: number) {
     const payload: TokenPayload = { userId };
     const token = this.jwtService.sign(payload);
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
@@ -64,7 +82,7 @@ export class AuthenticationService {
     )}`;
   }
 
-  getCookieForLogOut() {
+  private getCookieForLogOut() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
 }

@@ -1,12 +1,5 @@
-import {
-  IsString,
-  IsNotEmpty,
-  IsInt,
-  IsOptional,
-  IsDate,
-  IsBoolean,
-} from 'class-validator';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { IsInt, IsNotEmpty, IsDate } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
 import { Type } from 'class-transformer';
 
 export class CreateReservationDto {
@@ -19,8 +12,8 @@ export class CreateReservationDto {
   venueId: number;
 
   @ApiProperty({
-    description: 'Start date of the reservation (ISO format)',
-    example: '2025-08-01',
+    description: 'Start date of the reservation (ISO format with time)',
+    example: '2025-08-01T14:00:00.000Z',
   })
   @IsDate()
   @Type(() => Date)
@@ -28,8 +21,8 @@ export class CreateReservationDto {
   dateStart: Date;
 
   @ApiProperty({
-    description: 'End date of the reservation (ISO format)',
-    example: '2025-08-05',
+    description: 'End date of the reservation (ISO format with time)',
+    example: '2025-08-05T10:00:00.000Z',
   })
   @IsDate()
   @Type(() => Date)

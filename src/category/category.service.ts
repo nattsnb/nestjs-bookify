@@ -18,12 +18,12 @@ export class CategoryService {
   }
 
   async create(createCategoryData: CreateCategoryDto) {
-    const { name, amenities } = createCategoryData;
+    const { name, amenitiesIds } = createCategoryData;
 
     const invalidAmenityIds = [];
 
-    if (amenities) {
-      for (const id of amenities) {
+    if (amenitiesIds) {
+      for (const id of amenitiesIds) {
         const amenity = await this.prismaService.amenity.findUnique({
           where: { id },
         });
@@ -38,8 +38,8 @@ export class CategoryService {
     return this.prismaService.category.create({
       data: {
         name,
-        amenities: amenities?.length
-          ? { connect: amenities.map((id) => ({ id })) }
+        amenities: amenitiesIds?.length
+          ? { connect: amenitiesIds.map((id) => ({ id })) }
           : undefined,
       },
     });
@@ -60,15 +60,15 @@ export class CategoryService {
   }
 
   async update(categoryId: number, updateCategoryData: UpdateCategoryDto) {
-    const { name, amenities } = updateCategoryData;
+    const { name, amenitiesIds } = updateCategoryData;
 
     try {
       return await this.prismaService.category.update({
         where: { id: categoryId },
         data: {
           name,
-          amenities: amenities?.length
-            ? { set: amenities.map((id) => ({ id })) }
+          amenities: amenitiesIds?.length
+            ? { set: amenitiesIds.map((id) => ({ id })) }
             : undefined,
         },
       });

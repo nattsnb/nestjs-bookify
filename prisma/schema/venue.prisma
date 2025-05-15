@@ -1,5 +1,5 @@
 model Venue {
-  id                             Int           @id @default(autoincrement())
+  id                             Int              @id @default(autoincrement())
   pricePerNightInEURCent         Int
   rating                         Float
   capacity                       Int
@@ -19,9 +19,9 @@ model Venue {
   streetName                     String
   postalCode                     String
   city                           String
-  owner                          User          @relation(fields: [ownerId], references: [id])
+  owner                          User             @relation(fields: [ownerId], references: [id])
   ownerId                        Int
-  amenities                      Amenity[]
   reservations                   Reservation[]
   favourites                     Favourite[]
+  amenityToVenues                AmenityToVenue[]
 }

@@ -38,24 +38,19 @@ export class AuthenticationController {
     @Body() logInData: LogInDto,
     @Res({ passthrough: true }) response: Response,
   ) {
-    const user =
-      await this.authenticationService.getAuthenticatedUser(logInData);
-    const cookie = this.authenticationService.getCookieWithJwtToken(user.id);
-    response.setHeader('Set-Cookie', cookie);
-    return user;
+    return this.authenticationService.logIn(logInData, response);
   }
 
   @HttpCode(200)
   @Post('log-out')
   logOut(@Res({ passthrough: true }) response: Response) {
-    const cookie = this.authenticationService.getCookieForLogOut();
-    response.setHeader('Set-Cookie', cookie);
+    return this.authenticationService.logOut(response);
   }
 
   @UseGuards(JwtAuthenticationGuard)
   @Get()
   @TransformPlainToInstance(AuthenticationResponseDto)
   authenticate(@Req() request: RequestWithUser) {
-    return request.user;
+    return this.authenticationService.authenticate(request);
   }
 }

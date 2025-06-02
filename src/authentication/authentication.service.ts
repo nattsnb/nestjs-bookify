@@ -44,7 +44,7 @@ export class AuthenticationService {
     return request.user;
   }
 
-  private async getAuthenticatedUser(logInData: LogInDto) {
+  async getAuthenticatedUser(logInData: LogInDto) {
     const user = await this.getUserByEmail(logInData.email);
     const isPasswordVerified = await this.verifyPassword(
       logInData.password,
@@ -56,7 +56,7 @@ export class AuthenticationService {
     return user;
   }
 
-  private async getUserByEmail(email: string) {
+  async getUserByEmail(email: string) {
     try {
       return await this.usersService.getByEmail(email);
     } catch (error) {
@@ -67,14 +67,11 @@ export class AuthenticationService {
     }
   }
 
-  private async verifyPassword(
-    plainTextPassword: string,
-    hashedPassword: string,
-  ) {
+  async verifyPassword(plainTextPassword: string, hashedPassword: string) {
     return await bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
-  private getCookieWithJwtToken(userId: number) {
+  getCookieWithJwtToken(userId: number) {
     const payload: TokenPayload = { userId };
     const token = this.jwtService.sign(payload);
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
@@ -82,7 +79,7 @@ export class AuthenticationService {
     )}`;
   }
 
-  private getCookieForLogOut() {
+  getCookieForLogOut() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
 }

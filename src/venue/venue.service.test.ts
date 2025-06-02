@@ -110,6 +110,7 @@ describe('The VenueService', () => {
         amenities: [{ id: 3, name: 'Fireplace' }],
       },
     ];
+
     createVenueData = {
       name: venuesArray[0].name,
       description: venuesArray[0].description,
@@ -136,12 +137,22 @@ describe('The VenueService', () => {
   });
 
   describe('when getAll is called', () => {
-    beforeEach(() => {
-      prismaMock.venue.findMany.mockResolvedValue(venuesArray);
+    describe('and venues exist', () => {
+      beforeEach(() => {
+        prismaMock.venue.findMany.mockResolvedValue(venuesArray);
+      });
+      it('should return all venues with amenities included', async () => {
+        const result = await venueService.getAll();
+        expect(result).toEqual(venuesArray);
+      });
     });
-    it('should return all venues with amenities included', async () => {
-      const result = await venueService.getAll();
-      expect(result).toEqual(venuesArray);
+    describe('and no venues exist', () => {
+      beforeEach(() => {
+        prismaMock.venue.findMany.mockResolvedValue([]);
+      });
+      it('should throw NotFoundException', async () => {
+        await expect(venueService.getAll()).rejects.toThrow(NotFoundException);
+      });
     });
   });
 
@@ -168,36 +179,96 @@ describe('The VenueService', () => {
   });
 
   describe('when create is called', () => {
-    beforeEach(() => {
-      prismaMock.venue.create.mockResolvedValue(venuesArray[0]);
+    describe('and venue is created successfully', () => {
+      beforeEach(() => {
+        prismaMock.venue.create.mockResolvedValue(venuesArray[0]);
+      });
+      it('should create a venue and return it', async () => {
+        const result = await venueService.create(
+          createVenueData,
+          venuesArray[0].ownerId,
+        );
+        expect(result).toEqual(venuesArray[0]);
+      });
     });
-    it('should create a venue and return it', async () => {
-      const result = await venueService.create(
-        createVenueData,
-        venuesArray[0].ownerId,
-      );
-      expect(result).toEqual(venuesArray[0]);
+    describe('and venue creation fails due to missing relation', () => {
+      beforeEach(() => {
+        prismaMock.venue.create.mockImplementation(() => {
+          throw new Prisma.PrismaClientKnownRequestError('Not found', {
+            code: PrismaError.RecordDoesNotExist,
+            clientVersion: Prisma.prismaVersion.client,
+          });
+        });
+      });
+      it('should throw NotFoundException', async () => {
+        await expect(
+          venueService.create(createVenueData, venuesArray[0].ownerId),
+        ).rejects.toThrow(NotFoundException);
+      });
     });
   });
 
   describe('when update is called', () => {
+    let updateData: UpdateVenueDto;
+    let updatedVenue: any;
+    const newName = 'Updated Venue Name';
     beforeEach(() => {
-      prismaMock.venue.update.mockResolvedValue(venuesArray[0]);
+      updateData = { name: newName };
+      updatedVenue = {
+        ...venuesArray[0],
+        name: newName,
+      };
     });
-    it('should return updated venue', async () => {
-      const updateData: UpdateVenueDto = { name: venuesArray[0].name };
-      const result = await venueService.update(venuesArray[0].id, updateData);
-      expect(result).toEqual(venuesArray[0]);
+    describe('and update succeeds', () => {
+      beforeEach(() => {
+        prismaMock.venue.update.mockResolvedValue(updatedVenue);
+      });
+      it('should return the updated venue', async () => {
+        const result = await venueService.update(venuesArray[0].id, updateData);
+        expect(result).toEqual(updatedVenue);
+      });
+    });
+    describe('and venue does not exist', () => {
+      beforeEach(() => {
+        prismaMock.venue.update.mockImplementation(() => {
+          throw new Prisma.PrismaClientKnownRequestError('Not found', {
+            code: PrismaError.RecordDoesNotExist,
+            clientVersion: Prisma.prismaVersion.client,
+          });
+        });
+      });
+      it('should throw NotFoundException', async () => {
+        return expect(async () => {
+          await venueService.update(venuesArray[0].id, updateData);
+        }).rejects.toThrow(NotFoundException);
+      });
     });
   });
 
   describe('when delete is called', () => {
-    beforeEach(() => {
-      prismaMock.venue.delete.mockResolvedValue(venuesArray[0]);
+    describe('and venue exists', () => {
+      beforeEach(() => {
+        prismaMock.venue.delete.mockResolvedValue(venuesArray[0]);
+      });
+      it('should return deleted venue', async () => {
+        const result = await venueService.delete(venuesArray[0].id);
+        expect(result).toEqual(venuesArray[0]);
+      });
     });
-    it('should return deleted venue', async () => {
-      const result = await venueService.delete(venuesArray[0].id);
-      expect(result).toEqual(venuesArray[0]);
+    describe('and venue does not exist', () => {
+      beforeEach(() => {
+        prismaMock.venue.delete.mockImplementation(() => {
+          throw new Prisma.PrismaClientKnownRequestError('Not found', {
+            code: PrismaError.RecordDoesNotExist,
+            clientVersion: Prisma.prismaVersion.client,
+          });
+        });
+      });
+      it('should throw NotFoundException', async () => {
+        await expect(venueService.delete(999)).rejects.toThrow(
+          NotFoundException,
+        );
+      });
     });
   });
 

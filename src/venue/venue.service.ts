@@ -17,6 +17,10 @@ export class VenueService {
       },
     });
 
+    if (!venues.length) {
+      throw new NotFoundException('No venues found');
+    }
+
     return venues.map((venue) => ({
       ...venue,
       amenities: venue.amenityToVenues.map((venue) => venue.amenity),

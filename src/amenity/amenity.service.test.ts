@@ -135,7 +135,6 @@ describe('The AmenityService', () => {
         name: newName,
       };
     });
-
     describe('and amenity with given id exists', () => {
       let updateResult: Amenity;
       beforeEach(() => {

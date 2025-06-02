@@ -43,7 +43,7 @@ export class ReservationService {
           user: { connect: { id: userId } },
           dateEnd: dateEnd,
           dateStart: dateStart,
-          isActive: true,
+          isPendingRating: true,
           ...reservationData,
         },
       });
@@ -126,7 +126,7 @@ export class ReservationService {
     }
   }
 
-  async changeIsActive(reservationId: number) {
+  async changeIsPendingRating(reservationId: number) {
     try {
       const reservation = await this.prismaService.reservation.findUnique({
         where: { id: reservationId },
@@ -137,7 +137,7 @@ export class ReservationService {
       return await this.prismaService.reservation.update({
         where: { id: reservationId },
         data: {
-          isActive: !reservation.isActive,
+          isPendingRating: !reservation.isPendingRating,
         },
       });
     } catch (error) {
@@ -155,7 +155,7 @@ export class ReservationService {
     const conflicts = await this.prismaService.reservation.findMany({
       where: {
         venueId,
-        isActive: true,
+        isPendingRating: true,
         dateStart: { lt: dateEnd },
         dateEnd: { gt: dateStart },
       },
@@ -172,7 +172,7 @@ export class ReservationService {
     const reservations = await this.prismaService.reservation.findMany({
       where: {
         venueId,
-        isActive: true,
+        isPendingRating: true,
       },
       select: {
         dateStart: true,

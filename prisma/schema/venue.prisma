@@ -1,3 +1,13 @@
+enum VenueType {
+  HUT
+  HOUSE
+  LOFT
+  ROOM
+  STUDIO
+  CABIN
+  VILLA
+}
+
 model Venue {
   id                             Int              @id @default(autoincrement())
   pricePerNightInEURCent         Int
@@ -19,6 +29,9 @@ model Venue {
   streetName                     String
   postalCode                     String
   city                           String
+  latitude                       Float?
+  longitude                      Float?
+  type                           VenueType?
   owner                          User             @relation(fields: [ownerId], references: [id])
   ownerId                        Int
   reservations                   Reservation[]

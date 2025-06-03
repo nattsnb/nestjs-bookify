@@ -1,6 +1,7 @@
 import { AmenityDto } from '../../amenity/dto/amenity.dto';
 import { ReservationDto } from '../../reservation/dto/reservation.dto';
 import { FavouriteDto } from '../../favourite/dto/favourite.dto';
+import { VenueType } from '@prisma/client';
 
 export class VenueDto {
   id: number;
@@ -27,4 +28,7 @@ export class VenueDto {
   amenities?: AmenityDto[];
   reservations?: ReservationDto[];
   favourites?: FavouriteDto[];
+  type: VenueType;
+  latitude: number;
+  longitude: number;
 }

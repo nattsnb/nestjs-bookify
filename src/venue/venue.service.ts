@@ -30,12 +30,32 @@ export class VenueService {
       instagramUrl,
       twitterUrl,
       websiteUrl,
+      streetNumber,
+      streetName,
+      postalCode,
+      city,
       ...venueData
     } = createVenueData;
+
     try {
+      const coordinates = await this.geocodeAddress(
+        streetNumber,
+        streetName,
+        postalCode,
+        city,
+      );
+      const latitude = coordinates.latitude;
+      const longitude = coordinates.longitude;
+
       const newVenue = await this.prismaService.venue.create({
         data: {
           ...venueData,
+          streetNumber,
+          streetName,
+          postalCode,
+          city,
+          latitude,
+          longitude,
           facebookUrl: facebookUrl ?? undefined,
           instagramUrl: instagramUrl ?? undefined,
           twitterUrl: twitterUrl ?? undefined,
@@ -43,6 +63,7 @@ export class VenueService {
           owner: { connect: { id: userId } },
         },
       });
+
       if (amenitiesIds?.length) {
         await this.prismaService.amenityToVenue.createMany({
           data: amenitiesIds.map((amenityId) => ({
@@ -52,6 +73,7 @@ export class VenueService {
           skipDuplicates: true,
         });
       }
+
       return newVenue;
     } catch (error) {
       if (
@@ -59,9 +81,10 @@ export class VenueService {
         error.code === PrismaError.RecordDoesNotExist
       ) {
         throw new NotFoundException(
-          `Owner or amenity not found – check provided IDs`,
+          'Owner or amenity not found – check provided IDs',
         );
       }
+      console.error('Error creating venue:', error);
       throw error;
     }
   }
@@ -86,36 +109,79 @@ export class VenueService {
   }
 
   async update(venueId: number, updateVenueData: UpdateVenueDto) {
-    const { amenitiesIds, ...venueData } = updateVenueData;
-    try {
-      const updatedVenue = await this.prismaService.venue.update({
-        where: { id: venueId },
-        data: venueData,
-      });
-      if (amenitiesIds) {
-        await this.prismaService.amenityToVenue.deleteMany({
-          where: { venueId },
-        });
-        if (amenitiesIds.length > 0) {
-          await this.prismaService.amenityToVenue.createMany({
-            data: amenitiesIds.map((amenityId) => ({
-              venueId,
-              amenityId,
-            })),
-            skipDuplicates: true,
-          });
-        }
-      }
-      return updatedVenue;
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === PrismaError.RecordDoesNotExist
-      ) {
-        throw new NotFoundException(`Venue with ID ${venueId} not found`);
-      }
-      throw error;
+    const { amenitiesIds, ...partialData } = updateVenueData;
+
+    const existingVenue = await this.prismaService.venue.findUnique({
+      where: { id: venueId },
+    });
+
+    if (!existingVenue) {
+      throw new NotFoundException(`Venue with ID ${venueId} not found`);
     }
+
+    const streetNumber =
+      updateVenueData.streetNumber ?? existingVenue.streetNumber;
+    const streetName = updateVenueData.streetName ?? existingVenue.streetName;
+    const postalCode = updateVenueData.postalCode ?? existingVenue.postalCode;
+    const city = updateVenueData.city ?? existingVenue.city;
+
+    const shouldRecalculateLocation =
+      updateVenueData.streetNumber !== undefined ||
+      updateVenueData.streetName !== undefined ||
+      updateVenueData.postalCode !== undefined ||
+      updateVenueData.city !== undefined;
+
+    let latitude: number | undefined;
+    let longitude: number | undefined;
+
+    if (shouldRecalculateLocation) {
+      const coordinates = await this.geocodeAddress(
+        streetNumber,
+        streetName,
+        postalCode,
+        city,
+      );
+      latitude = coordinates.latitude;
+      longitude = coordinates.longitude;
+    }
+
+    const updatedVenue = await this.prismaService.venue.update({
+      where: { id: venueId },
+      data: {
+        ...partialData,
+        ...(updateVenueData.streetNumber !== undefined && {
+          streetNumber: updateVenueData.streetNumber,
+        }),
+        ...(updateVenueData.streetName !== undefined && {
+          streetName: updateVenueData.streetName,
+        }),
+        ...(updateVenueData.postalCode !== undefined && {
+          postalCode: updateVenueData.postalCode,
+        }),
+        ...(updateVenueData.city !== undefined && {
+          city: updateVenueData.city,
+        }),
+        ...(latitude !== undefined && { latitude }),
+        ...(longitude !== undefined && { longitude }),
+      },
+    });
+
+    if (amenitiesIds) {
+      await this.prismaService.amenityToVenue.deleteMany({
+        where: { venueId },
+      });
+      if (amenitiesIds.length > 0) {
+        await this.prismaService.amenityToVenue.createMany({
+          data: amenitiesIds.map((amenityId) => ({
+            venueId,
+            amenityId,
+          })),
+          skipDuplicates: true,
+        });
+      }
+    }
+
+    return updatedVenue;
   }
 
   async delete(venueId: number) {
@@ -188,5 +254,40 @@ export class VenueService {
     }
 
     return this.filterByAmenity(allAmenityIds);
+  }
+
+  private async geocodeAddress(
+    streetNumber: string,
+    streetName: string,
+    postalCode: string,
+    city: string,
+  ): Promise<{ latitude: number; longitude: number }> {
+    const query = `${streetNumber} ${streetName}, ${postalCode} ${city}`;
+    const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
+
+    let data;
+    try {
+      const response = await fetch(url, {
+        headers: { 'User-Agent': 'NestJS-App' },
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+
+      data = await response.json();
+    } catch (error) {
+      throw new NotFoundException('Geocoding failed: fetch error');
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new NotFoundException('Geocoding failed: address not found');
+    }
+
+    const { lat, lon } = data[0];
+    return {
+      latitude: parseFloat(lat),
+      longitude: parseFloat(lon),
+    };
   }
 }

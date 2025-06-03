@@ -28,34 +28,24 @@ export class ReservationService {
 
     const availability = await this.checkAvailability(
       venueId,
-      dateStart,
-      dateEnd,
+      new Date(`${dateStart}T00:00:00.000Z`),
+      new Date(`${dateEnd}T00:00:00.000Z`),
     );
 
     if (!availability.available) {
       throw new ConflictException('Selected dates are already reserved.');
     }
 
-    try {
-      return await this.prismaService.reservation.create({
-        data: {
-          venue: { connect: { id: venueId } },
-          user: { connect: { id: userId } },
-          dateEnd: dateEnd,
-          dateStart: dateStart,
-          isPendingRating: true,
-          ...reservationData,
-        },
-      });
-    } catch (error) {
-      if (
-        error instanceof Prisma.PrismaClientKnownRequestError &&
-        error.code === PrismaError.RecordDoesNotExist
-      ) {
-        throw new NotFoundException('Venue or user not found');
-      }
-      throw error;
-    }
+    return this.prismaService.reservation.create({
+      data: {
+        venue: { connect: { id: venueId } },
+        user: { connect: { id: userId } },
+        dateStart: new Date(`${dateStart}T00:00:00.000Z`),
+        dateEnd: new Date(`${dateEnd}T00:00:00.000Z`),
+        isPendingRating: true,
+        ...reservationData,
+      },
+    });
   }
 
   async getOne(reservationId: number) {
@@ -160,12 +150,7 @@ export class ReservationService {
         dateEnd: { gt: dateStart },
       },
     });
-
-    if (conflicts.length > 0) {
-      return { available: false };
-    }
-
-    return { available: true };
+    return { available: conflicts.length === 0 };
   }
 
   async getOccupiedDates(venueId: number) {

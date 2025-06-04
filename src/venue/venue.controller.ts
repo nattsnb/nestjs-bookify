@@ -31,11 +31,8 @@ export class VenueController {
   }
 
   @Get('filter')
-  filterByAmenitiesAndOccasions(@Query() filterDto: VenueFilterDto) {
-    return this.venueService.filterCombined(
-      filterDto.amenities ?? [],
-      filterDto.occasions ?? [],
-    );
+  findWithFilters(@Query() filterDto: VenueFilterDto) {
+    return this.venueService.findWithFilters(filterDto);
   }
 
   @Post()

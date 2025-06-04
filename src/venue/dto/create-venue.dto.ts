@@ -8,7 +8,6 @@ import {
   MaxLength,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { VenueType } from '@prisma/client';
 
 export class CreateVenueDto {
   @ApiProperty({ description: 'Name of the venue', example: 'Seaside Villa' })
@@ -157,11 +156,10 @@ export class CreateVenueDto {
   amenitiesIds?: number[];
 
   @ApiProperty({
-    description: 'Type of the venue',
-    example: 'HOUSE',
-    enum: VenueType,
-    enumName: 'VenueType',
+    description: 'ID of the venue type',
+    example: 1,
   })
+  @IsInt()
   @IsNotEmpty()
-  type: VenueType;
+  venueTypeId: number;
 }

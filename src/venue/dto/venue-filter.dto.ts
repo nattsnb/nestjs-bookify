@@ -18,11 +18,12 @@ export class VenueFilterDto {
   })
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) =>
-    Array.isArray(value)
-      ? value.map((id) => Number(id))
-      : value.split(',').map((id: string) => Number(id)),
-  )
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value.map(Number);
+    if (typeof value === 'string' && value.trim() !== '')
+      return value.split(',').map(Number);
+    return [];
+  })
   @IsInt({ each: true })
   amenities?: number[];
 
@@ -33,28 +34,24 @@ export class VenueFilterDto {
   })
   @IsOptional()
   @IsArray()
-  @Transform(({ value }) =>
-    Array.isArray(value)
-      ? value.map((id) => Number(id))
-      : value.split(',').map((id: string) => Number(id)),
-  )
+  @Transform(({ value }) => {
+    if (Array.isArray(value)) return value.map(Number);
+    if (typeof value === 'string' && value.trim() !== '')
+      return value.split(',').map(Number);
+    return [];
+  })
   @IsInt({ each: true })
   occasions?: number[];
 
   @ApiPropertyOptional({
-    description: 'Array of venue type IDs',
-    example: [1, 2],
-    type: [Number],
+    description: 'Venue type ID',
+    example: 1,
+    type: Number,
   })
   @IsOptional()
-  @IsArray()
-  @Transform(({ value }) =>
-    Array.isArray(value)
-      ? value.map((id) => Number(id))
-      : value.split(',').map((id: string) => Number(id)),
-  )
-  @IsInt({ each: true })
-  venueTypes?: number[];
+  @Transform(({ value }) => Number(value))
+  @IsInt()
+  venueTypeId?: number;
 
   @ApiPropertyOptional({
     description: 'Minimum price per night',
@@ -65,7 +62,7 @@ export class VenueFilterDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @Min(0)
-  priceMin?: number;
+  pricePerNightInEURCentMin?: number;
 
   @ApiPropertyOptional({
     description: 'Maximum price per night',
@@ -76,7 +73,7 @@ export class VenueFilterDto {
   @Transform(({ value }) => Number(value))
   @IsNumber()
   @Min(0)
-  priceMax?: number;
+  pricePerNightInEURCentMax?: number;
 
   @ApiPropertyOptional({
     description: 'Start date for reservation (YYYY-MM-DD)',
@@ -108,15 +105,6 @@ export class VenueFilterDto {
   @IsInt()
   @Min(1)
   guests?: number;
-
-  @ApiPropertyOptional({
-    description: 'City or locality to search around',
-    example: 'Gdańsk',
-    type: String,
-  })
-  @IsOptional()
-  @IsString()
-  city?: string;
 
   @ApiPropertyOptional({
     description: 'Search radius in kilometers from the specified city',

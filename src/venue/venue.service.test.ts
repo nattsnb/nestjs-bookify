@@ -133,6 +133,7 @@ describe('The VenueService', () => {
       postalCode: venuesArray[0].postalCode,
       city: venuesArray[0].city,
       amenitiesIds: [1, 2],
+      venueTypeId: 1,
     };
   });
 
@@ -181,8 +182,13 @@ describe('The VenueService', () => {
   describe('when create is called', () => {
     describe('and venue is created successfully', () => {
       beforeEach(() => {
+        jest.spyOn(venueService as any, 'geocodeAddress').mockResolvedValue({
+          lat: 52.2297,
+          lon: 21.0122,
+        });
         prismaMock.venue.create.mockResolvedValue(venuesArray[0]);
       });
+
       it('should create a venue and return it', async () => {
         const result = await venueService.create(
           createVenueData,
@@ -221,6 +227,7 @@ describe('The VenueService', () => {
     });
     describe('and update succeeds', () => {
       beforeEach(() => {
+        prismaMock.venue.findUnique.mockResolvedValue(venuesArray[0]); // ✅ fix
         prismaMock.venue.update.mockResolvedValue(updatedVenue);
       });
       it('should return the updated venue', async () => {
@@ -238,9 +245,9 @@ describe('The VenueService', () => {
         });
       });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await venueService.update(venuesArray[0].id, updateData);
-        }).rejects.toThrow(NotFoundException);
+        await expect(
+          venueService.update(venuesArray[0].id, updateData),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });
@@ -272,28 +279,47 @@ describe('The VenueService', () => {
     });
   });
 
-  describe('when filterByAmenity is called', () => {
-    it('should return matching venues', async () => {
-      prismaMock.amenityToVenue.groupBy.mockResolvedValue([
-        { venueId: venuesArray[0].id },
-      ]);
-      prismaMock.venue.findMany.mockResolvedValue([venuesArray[0]]);
-      const result = await venueService.filterByAmenity([1, 2]);
-      expect(result).toEqual([venuesArray[0]]);
-    });
-  });
+  describe('wheen getCombinedAmenities is called', () => {
+    it('should return combined unique amenity IDs from amenities and occasion amenities', async () => {
+      const amenities = [1, 2];
+      const occasionIds = [10];
 
-  describe('when filterCombined is called', () => {
-    it('should return venues matching combined filters', async () => {
       prismaMock.occasion.findMany.mockResolvedValue([
-        { id: 1, amenities: [{ id: 2 }] },
+        {
+          id: 10,
+          amenities: [{ id: 2 }, { id: 3 }],
+        },
       ]);
-      prismaMock.amenityToVenue.groupBy.mockResolvedValue([
-        { venueId: venuesArray[0].id },
-      ]);
-      prismaMock.venue.findMany.mockResolvedValue([venuesArray[0]]);
-      const result = await venueService.filterCombined([1], [1]);
-      expect(result).toEqual([venuesArray[0]]);
+
+      const result = await venueService.getCombinedAmenities(
+        amenities,
+        occasionIds,
+      );
+      expect(result.sort()).toEqual([1, 2, 3]);
+    });
+
+    it('should return only initial amenities if no occasionIds provided', async () => {
+      const amenities = [1, 4];
+      const occasionIds: number[] = [];
+
+      const result = await venueService.getCombinedAmenities(
+        amenities,
+        occasionIds,
+      );
+      expect(result).toEqual([1, 4]);
+    });
+
+    it('should return only amenities if no matched occasions found', async () => {
+      const amenities = [5, 6];
+      const occasionIds = [99];
+
+      prismaMock.occasion.findMany.mockResolvedValue([]);
+
+      const result = await venueService.getCombinedAmenities(
+        amenities,
+        occasionIds,
+      );
+      expect(result).toEqual([5, 6]);
     });
   });
 });

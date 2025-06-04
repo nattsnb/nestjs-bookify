@@ -1,6 +1,7 @@
 import { AmenityDto } from '../../amenity/dto/amenity.dto';
 import { ReservationDto } from '../../reservation/dto/reservation.dto';
 import { FavouriteDto } from '../../favourite/dto/favourite.dto';
+import { VenueTypeDto } from '../../venue-type/dto/venue-type.dto';
 
 export class VenueDto {
   id: number;
@@ -23,8 +24,11 @@ export class VenueDto {
   streetName: string;
   postalCode: string;
   city: string;
+  latitude: number;
+  longitude: number;
   ownerId: number;
   amenities?: AmenityDto[];
   reservations?: ReservationDto[];
   favourites?: FavouriteDto[];
+  venueType: VenueTypeDto;
 }

@@ -19,9 +19,13 @@ model Venue {
   streetName                     String
   postalCode                     String
   city                           String
+  latitude                       Float?
+  longitude                      Float?
   owner                          User             @relation(fields: [ownerId], references: [id])
   ownerId                        Int
   reservations                   Reservation[]
   favourites                     Favourite[]
   amenityToVenues                AmenityToVenue[]
+  venueType                      VenueType        @relation(fields: [venueTypeId], references: [id])
+  venueTypeId                    Int
 }

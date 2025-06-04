@@ -9,6 +9,7 @@ import { AmenityModule } from './amenity/amenity.module';
 import { ReservationModule } from './reservation/reservation.module';
 import { FavouriteModule } from './favourite/favourite.module';
 import { RatingModule } from './rating/rating.module';
+import { VenueTypeModule } from './venue-type/venue-type.module';
 
 @Module({
   imports: [
@@ -27,6 +28,7 @@ import { RatingModule } from './rating/rating.module';
     ReservationModule,
     FavouriteModule,
     RatingModule,
+    VenueTypeModule,
   ],
 })
 export class AppModule {}

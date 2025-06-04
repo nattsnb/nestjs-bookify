@@ -1,0 +1,5 @@
+model VenueType {
+  id     Int     @id @default(autoincrement())
+  name   String  @unique
+  venues Venue[]
+}

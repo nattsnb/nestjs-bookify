@@ -7,7 +7,6 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
-import { UpdateAmenityDto } from '../amenity/dto/update-amenity.dto';
 import * as dayjs from 'dayjs';
 
 @Injectable()
@@ -36,23 +35,31 @@ export class ReservationService {
       throw new ConflictException('Selected dates are already reserved.');
     }
 
-    return this.prismaService.reservation.create({
-      data: {
-        venue: { connect: { id: venueId } },
-        user: { connect: { id: userId } },
-        dateStart: new Date(`${dateStart}T00:00:00.000Z`),
-        dateEnd: new Date(`${dateEnd}T00:00:00.000Z`),
-        isPendingRating: true,
-        ...reservationData,
-      },
-    });
+    try {
+      return await this.prismaService.reservation.create({
+        data: {
+          venue: { connect: { id: venueId } },
+          user: { connect: { id: userId } },
+          dateStart: new Date(`${dateStart}T00:00:00.000Z`),
+          dateEnd: new Date(`${dateEnd}T00:00:00.000Z`),
+          isPendingRating: true,
+          ...reservationData,
+        },
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.RecordDoesNotExist
+      ) {
+        throw new NotFoundException('Venue or user not found');
+      }
+      throw error;
+    }
   }
 
   async getOne(reservationId: number) {
     const reservation = await this.prismaService.reservation.findUnique({
-      where: {
-        id: reservationId,
-      },
+      where: { id: reservationId },
     });
 
     if (!reservation) {
@@ -66,9 +73,7 @@ export class ReservationService {
 
   async getByVenue(venueId: number) {
     const reservations = await this.prismaService.reservation.findMany({
-      where: {
-        venueId,
-      },
+      where: { venueId },
     });
 
     if (!reservations.length) {
@@ -82,9 +87,7 @@ export class ReservationService {
 
   async getByUser(userId: number) {
     const reservations = await this.prismaService.reservation.findMany({
-      where: {
-        userId,
-      },
+      where: { userId },
     });
 
     if (!reservations.length) {
@@ -99,9 +102,7 @@ export class ReservationService {
   async delete(reservationId: number) {
     try {
       return await this.prismaService.reservation.delete({
-        where: {
-          id: reservationId,
-        },
+        where: { id: reservationId },
       });
     } catch (error) {
       if (
@@ -121,9 +122,11 @@ export class ReservationService {
       const reservation = await this.prismaService.reservation.findUnique({
         where: { id: reservationId },
       });
+
       if (!reservation) {
         throw new NotFoundException('Reservation not found');
       }
+
       return await this.prismaService.reservation.update({
         where: { id: reservationId },
         data: {
@@ -150,6 +153,7 @@ export class ReservationService {
         dateEnd: { gt: dateStart },
       },
     });
+
     return { available: conflicts.length === 0 };
   }
 
@@ -164,7 +168,9 @@ export class ReservationService {
         dateEnd: true,
       },
     });
+
     const occupied: string[] = [];
+
     for (const reservation of reservations) {
       let current = dayjs(reservation.dateStart);
       const end = dayjs(reservation.dateEnd);
@@ -177,6 +183,7 @@ export class ReservationService {
         current = current.add(1, 'day');
       }
     }
+
     return occupied.sort();
   }
 }

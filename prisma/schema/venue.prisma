@@ -1,0 +1,27 @@
+model Venue {
+  id                             Int           @id @default(autoincrement())
+  pricePerNightInEURCent         Int
+  rating                         Float
+  capacity                       Int
+  amountsOfBeds                  Int
+  extraSleepingDetails           String
+  name                           String
+  images                         Json
+  description                    String
+  checkInHour                    Int
+  checkOutHour                   Int
+  distanceFromCityCenterInMeters Int
+  facebookUrl                    String?
+  instagramUrl                   String?
+  twitterUrl                     String?
+  websiteUrl                     String?
+  streetNumber                   String
+  streetName                     String
+  postalCode                     String
+  city                           String
+  owner                          User          @relation(fields: [ownerId], references: [id])
+  ownerId                        Int
+  amenities                      Amenity[]
+  reservations                   Reservation[]
+  favourites                     Favourite[]
+}

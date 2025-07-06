@@ -1,0 +1,8 @@
+model Rating {
+  id            Int         @id @default(autoincrement())
+  score         Int
+  review        String?
+  createdAt     DateTime    @default(now())
+  reservationId Int         @unique
+  reservation   Reservation @relation(fields: [reservationId], references: [id])
+}

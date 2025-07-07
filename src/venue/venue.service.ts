@@ -7,10 +7,16 @@ import { VenueFilterDto } from './dto/venue-filter.dto';
 import { UpdateVenueDetailsDto } from './dto/update-venue-details.dto';
 import { UpdateVenueAmenitiesDto } from './dto/update-venue-amenities.dto';
 import { UpdateVenueLocationDto } from './dto/update-venue-location.dto';
+import { HttpService } from '@nestjs/axios';
+
+type NominatimResult = { lat: string; lon: string }[];
 
 @Injectable()
 export class VenueService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly httpService: HttpService,
+  ) {}
 
   async getAll() {
     try {
@@ -381,29 +387,29 @@ export class VenueService {
     const query = `${streetNumber} ${streetName}, ${postalCode} ${city}`;
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
 
-    let data;
     try {
-      const response = await fetch(url, {
-        headers: { 'User-Agent': 'NestJS-App' },
-      });
+      type NominatimResult = { lat: string; lon: string }[];
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      const response = await this.httpService.axiosRef.get<NominatimResult>(
+        url,
+        {
+          headers: { 'User-Agent': 'NestJS-App' },
+        },
+      );
+
+      const data = response.data;
+
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new NotFoundException('Geocoding failed: address not found');
       }
 
-      data = await response.json();
+      const { lat, lon } = data[0];
+      return {
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lon),
+      };
     } catch (error) {
-      throw new NotFoundException('Geocoding failed: fetch error');
+      throw new NotFoundException('Geocoding failed: get error');
     }
-
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new NotFoundException('Geocoding failed: address not found');
-    }
-
-    const { lat, lon } = data[0];
-    return {
-      latitude: parseFloat(lat),
-      longitude: parseFloat(lon),
-    };
   }
 }

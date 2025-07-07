@@ -10,7 +10,11 @@ export class CategoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
   async getAll() {
-    const categories = await this.prismaService.category.findMany();
+    const categories = await this.prismaService.category.findMany({
+      include: {
+        amenities: true,
+      },
+    });
     if (!categories.length) {
       throw new NotFoundException('No categories found');
     }

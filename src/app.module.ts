@@ -10,6 +10,7 @@ import { ReservationModule } from './reservation/reservation.module';
 import { FavouriteModule } from './favourite/favourite.module';
 import { RatingModule } from './rating/rating.module';
 import { VenueTypeModule } from './venue-type/venue-type.module';
+import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports: [
@@ -29,6 +30,7 @@ import { VenueTypeModule } from './venue-type/venue-type.module';
     FavouriteModule,
     RatingModule,
     VenueTypeModule,
+    HttpModule,
   ],
 })
 export class AppModule {}

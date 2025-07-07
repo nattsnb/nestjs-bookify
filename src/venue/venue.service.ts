@@ -1,14 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../database/prisma.service';
 import { CreateVenueDto } from './dto/create-venue.dto';
-import { UpdateVenueDto } from './dto/update-venue.dto';
 import { PrismaError } from '../database/prisma-error.enum';
 import { Prisma } from '@prisma/client';
 import { VenueFilterDto } from './dto/venue-filter.dto';
+import { UpdateVenueDetailsDto } from './dto/update-venue-details.dto';
+import { UpdateVenueAmenitiesDto } from './dto/update-venue-amenities.dto';
+import { UpdateVenueLocationDto } from './dto/update-venue-location.dto';
+import { HttpService } from '@nestjs/axios';
+
+type NominatimResult = { lat: string; lon: string }[];
 
 @Injectable()
 export class VenueService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly httpService: HttpService,
+  ) {}
 
   async getAll() {
     try {
@@ -25,7 +33,6 @@ export class VenueService {
 
       return venues.map((venue) => ({
         ...venue,
-        amenities: venue.amenityToVenues.map((venue) => venue.amenity),
       }));
     } catch (error) {
       throw error;
@@ -113,36 +120,31 @@ export class VenueService {
 
       return {
         ...venue,
-        amenities: venue.amenityToVenues.map((venue) => venue.amenity),
       };
     } catch (error) {
       throw error;
     }
   }
 
-  async update(venueId: number, updateVenueData: UpdateVenueDto) {
+  async updateVenueLocation(venueId: number, dto: UpdateVenueLocationDto) {
     try {
-      const { amenitiesIds, ...partialData } = updateVenueData;
-
       const existingVenue = await this.prismaService.venue.findUnique({
         where: { id: venueId },
       });
-
       if (!existingVenue) {
         throw new NotFoundException(`Venue with ID ${venueId} not found`);
       }
 
-      const streetNumber =
-        updateVenueData.streetNumber ?? existingVenue.streetNumber;
-      const streetName = updateVenueData.streetName ?? existingVenue.streetName;
-      const postalCode = updateVenueData.postalCode ?? existingVenue.postalCode;
-      const city = updateVenueData.city ?? existingVenue.city;
+      const streetNumber = dto.streetNumber ?? existingVenue.streetNumber;
+      const streetName = dto.streetName ?? existingVenue.streetName;
+      const postalCode = dto.postalCode ?? existingVenue.postalCode;
+      const city = dto.city ?? existingVenue.city;
 
       const shouldRecalculateLocation =
-        updateVenueData.streetNumber !== undefined ||
-        updateVenueData.streetName !== undefined ||
-        updateVenueData.postalCode !== undefined ||
-        updateVenueData.city !== undefined;
+        dto.streetNumber !== undefined ||
+        dto.streetName !== undefined ||
+        dto.postalCode !== undefined ||
+        dto.city !== undefined;
 
       let latitude: number | undefined;
       let longitude: number | undefined;
@@ -158,41 +160,74 @@ export class VenueService {
         longitude = coordinates.longitude;
       }
 
-      const updatedVenue = await this.prismaService.venue.update({
+      return await this.prismaService.venue.update({
         where: { id: venueId },
         data: {
-          ...partialData,
-          ...(updateVenueData.streetNumber !== undefined && {
-            streetNumber: updateVenueData.streetNumber,
+          ...(dto.streetNumber !== undefined && {
+            streetNumber: dto.streetNumber,
           }),
-          ...(updateVenueData.streetName !== undefined && {
-            streetName: updateVenueData.streetName,
-          }),
-          ...(updateVenueData.postalCode !== undefined && {
-            postalCode: updateVenueData.postalCode,
-          }),
-          ...(updateVenueData.city !== undefined && {
-            city: updateVenueData.city,
-          }),
+          ...(dto.streetName !== undefined && { streetName: dto.streetName }),
+          ...(dto.postalCode !== undefined && { postalCode: dto.postalCode }),
+          ...(dto.city !== undefined && { city: dto.city }),
           ...(latitude !== undefined && { latitude }),
           ...(longitude !== undefined && { longitude }),
         },
       });
+    } catch (error) {
+      throw error;
+    }
+  }
 
-      if (amenitiesIds) {
-        await this.prismaService.amenityToVenue.deleteMany({
-          where: { venueId },
+  async updateVenueAmenities(venueId: number, dto: UpdateVenueAmenitiesDto) {
+    try {
+      const { amenitiesIds } = dto;
+
+      await this.prismaService.amenityToVenue.deleteMany({
+        where: { venueId },
+      });
+
+      if (amenitiesIds && amenitiesIds.length > 0) {
+        await this.prismaService.amenityToVenue.createMany({
+          data: amenitiesIds.map((amenityId) => ({
+            venueId,
+            amenityId,
+          })),
+          skipDuplicates: true,
         });
-        if (amenitiesIds.length > 0) {
-          await this.prismaService.amenityToVenue.createMany({
-            data: amenitiesIds.map((amenityId) => ({
-              venueId,
-              amenityId,
-            })),
-            skipDuplicates: true,
-          });
-        }
       }
+
+      return {
+        venueId,
+        amenities: amenitiesIds ?? [],
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async updateVenueDetails(venueId: number, dto: UpdateVenueDetailsDto) {
+    try {
+      const existingVenue = await this.prismaService.venue.findUnique({
+        where: { id: venueId },
+      });
+      if (!existingVenue) {
+        throw new NotFoundException(`Venue with ID ${venueId} not found`);
+      }
+
+      const dataToUpdate = Object.entries(dto).reduce(
+        (acc, [key, value]) => {
+          if (value !== undefined) acc[key] = value;
+          return acc;
+        },
+        {} as Record<string, any>,
+      );
+
+      delete dataToUpdate.id;
+
+      const updatedVenue = await this.prismaService.venue.update({
+        where: { id: venueId },
+        data: dataToUpdate,
+      });
 
       return updatedVenue;
     } catch (error) {
@@ -352,29 +387,29 @@ export class VenueService {
     const query = `${streetNumber} ${streetName}, ${postalCode} ${city}`;
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
 
-    let data;
     try {
-      const response = await fetch(url, {
-        headers: { 'User-Agent': 'NestJS-App' },
-      });
+      type NominatimResult = { lat: string; lon: string }[];
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
+      const response = await this.httpService.axiosRef.get<NominatimResult>(
+        url,
+        {
+          headers: { 'User-Agent': 'NestJS-App' },
+        },
+      );
+
+      const data = response.data;
+
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new NotFoundException('Geocoding failed: address not found');
       }
 
-      data = await response.json();
+      const { lat, lon } = data[0];
+      return {
+        latitude: parseFloat(lat),
+        longitude: parseFloat(lon),
+      };
     } catch (error) {
-      throw new NotFoundException('Geocoding failed: fetch error');
+      throw new NotFoundException('Geocoding failed: get error');
     }
-
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new NotFoundException('Geocoding failed: address not found');
-    }
-
-    const { lat, lon } = data[0];
-    return {
-      latitude: parseFloat(lat),
-      longitude: parseFloat(lon),
-    };
   }
 }

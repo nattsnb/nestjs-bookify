@@ -135,42 +135,24 @@ export class VenueService {
         throw new NotFoundException(`Venue with ID ${venueId} not found`);
       }
 
-      const streetNumber = dto.streetNumber ?? existingVenue.streetNumber;
-      const streetName = dto.streetName ?? existingVenue.streetName;
-      const postalCode = dto.postalCode ?? existingVenue.postalCode;
-      const city = dto.city ?? existingVenue.city;
+      const { streetNumber, streetName, postalCode, city } = dto;
 
-      const shouldRecalculateLocation =
-        dto.streetNumber !== undefined ||
-        dto.streetName !== undefined ||
-        dto.postalCode !== undefined ||
-        dto.city !== undefined;
-
-      let latitude: number | undefined;
-      let longitude: number | undefined;
-
-      if (shouldRecalculateLocation) {
-        const coordinates = await this.geocodeAddress(
-          streetNumber,
-          streetName,
-          postalCode,
-          city,
-        );
-        latitude = coordinates.latitude;
-        longitude = coordinates.longitude;
-      }
+      const coordinates = await this.geocodeAddress(
+        streetNumber,
+        streetName,
+        postalCode,
+        city,
+      );
 
       return await this.prismaService.venue.update({
         where: { id: venueId },
         data: {
-          ...(dto.streetNumber !== undefined && {
-            streetNumber: dto.streetNumber,
-          }),
-          ...(dto.streetName !== undefined && { streetName: dto.streetName }),
-          ...(dto.postalCode !== undefined && { postalCode: dto.postalCode }),
-          ...(dto.city !== undefined && { city: dto.city }),
-          ...(latitude !== undefined && { latitude }),
-          ...(longitude !== undefined && { longitude }),
+          streetNumber,
+          streetName,
+          postalCode,
+          city,
+          latitude: coordinates.latitude,
+          longitude: coordinates.longitude,
         },
       });
     } catch (error) {

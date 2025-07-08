@@ -5,7 +5,11 @@ import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
 import { CreateVenueDto } from './dto/create-venue.dto';
-import { UpdateVenueDto } from './dto/update-venue.dto';
+import { UpdateVenueLocationDto } from './dto/update-venue-location.dto';
+import { VenueDto } from './dto/venue.dto';
+import { HttpService } from '@nestjs/axios';
+import { UpdateVenueAmenitiesDto } from './dto/update-venue-amenities.dto';
+import { UpdateVenueDetailsDto } from './dto/update-venue-details.dto';
 
 describe('The VenueService', () => {
   let venueService: VenueService;
@@ -32,10 +36,17 @@ describe('The VenueService', () => {
       },
     };
 
+    const httpServiceMock = {
+      axiosRef: {
+        get: jest.fn(),
+      },
+    };
+
     const module = await Test.createTestingModule({
       providers: [
         VenueService,
         { provide: PrismaService, useValue: prismaMock },
+        { provide: HttpService, useValue: httpServiceMock },
       ],
     }).compile();
 
@@ -214,39 +225,265 @@ describe('The VenueService', () => {
     });
   });
 
-  describe('when update is called', () => {
-    let updateData: UpdateVenueDto;
-    let updatedVenue: any;
-    const newName = 'Updated Venue Name';
+  describe('when updateVenueLocation is called', () => {
+    let updateData: UpdateVenueLocationDto;
+    let updatedVenue: VenueDto;
+    const newStreetNumber = '123';
+    const newStreetName = 'Updated Street Name';
+    const newPostalCode = 'Updated Postal Code';
+    const newCity = 'Updated City Name';
+    const mockLatitude = 52.2297;
+    const mockLongitude = 21.0122;
     beforeEach(() => {
-      updateData = { name: newName };
+      updateData = {
+        streetNumber: newStreetNumber,
+        streetName: newStreetName,
+        postalCode: newPostalCode,
+        city: newCity,
+      };
       updatedVenue = {
         ...venuesArray[0],
-        name: newName,
+        streetNumber: newStreetNumber,
+        streetName: newStreetName,
+        postalCode: newPostalCode,
+        city: newCity,
+        latitude: mockLatitude,
+        longitude: mockLongitude,
       };
     });
-    describe('and update succeeds', () => {
+    describe('and venue exists', () => {
       beforeEach(() => {
-        prismaMock.venue.findUnique.mockResolvedValue(venuesArray[0]); // ✅ fix
-        prismaMock.venue.update.mockResolvedValue(updatedVenue);
+        prismaMock.venue.findUnique.mockResolvedValue(venuesArray[0]);
       });
-      it('should return the updated venue', async () => {
-        const result = await venueService.update(venuesArray[0].id, updateData);
-        expect(result).toEqual(updatedVenue);
+      describe('and geocode works', () => {
+        beforeEach(() => {
+          (venueService as any).geocodeAddress = jest.fn().mockResolvedValue({
+            latitude: mockLatitude,
+            longitude: mockLongitude,
+          });
+          prismaMock.venue.update.mockResolvedValue(updatedVenue);
+        });
+        it('should update venue location and return updated venue', async () => {
+          const result = await venueService.updateVenueLocation(
+            venuesArray[0].id,
+            updateData,
+          );
+          expect(result).toEqual(updatedVenue);
+          expect((venueService as any).geocodeAddress).toHaveBeenCalledWith(
+            newStreetNumber,
+            newStreetName,
+            newPostalCode,
+            newCity,
+          );
+          expect(prismaMock.venue.update).toHaveBeenCalledWith({
+            where: { id: venuesArray[0].id },
+            data: {
+              streetNumber: newStreetNumber,
+              streetName: newStreetName,
+              postalCode: newPostalCode,
+              city: newCity,
+              latitude: mockLatitude,
+              longitude: mockLongitude,
+            },
+          });
+        });
+      });
+      describe('and geocode fails', () => {
+        beforeEach(() => {
+          (venueService as any).geocodeAddress = jest
+            .fn()
+            .mockRejectedValue(new NotFoundException('Geocoding failed'));
+        });
+        it('should throw NotFoundException from geocodeAddress', async () => {
+          await expect(
+            venueService.updateVenueLocation(venuesArray[0].id, updateData),
+          ).rejects.toThrow(NotFoundException);
+        });
       });
     });
     describe('and venue does not exist', () => {
       beforeEach(() => {
-        prismaMock.venue.update.mockImplementation(() => {
-          throw new Prisma.PrismaClientKnownRequestError('Not found', {
-            code: PrismaError.RecordDoesNotExist,
-            clientVersion: Prisma.prismaVersion.client,
+        prismaMock.venue.findUnique.mockResolvedValue(null);
+      });
+
+      it('should throw NotFoundException', async () => {
+        await expect(
+          venueService.updateVenueLocation(999, updateData),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+  });
+
+  describe('when updateVenueAmenities is called', () => {
+    let updateAmenitiesDto: UpdateVenueAmenitiesDto;
+    let venueId: number;
+    const exampleAmenities = [1, 2, 3];
+    beforeEach(() => {
+      updateAmenitiesDto = { amenitiesIds: exampleAmenities };
+      prismaMock.venue.findUnique.mockClear();
+      prismaMock.amenityToVenue.deleteMany.mockClear();
+      prismaMock.amenityToVenue.createMany.mockClear();
+      venueId = venuesArray[0].id;
+    });
+    describe('and venue exists', () => {
+      beforeEach(() => {
+        prismaMock.venue.findUnique.mockResolvedValue(venuesArray[0]);
+      });
+      describe('and amenitiesIds is a non-empty array', () => {
+        beforeEach(() => {
+          prismaMock.amenityToVenue.deleteMany.mockResolvedValue({ count: 3 });
+          prismaMock.amenityToVenue.createMany.mockResolvedValue({ count: 3 });
+        });
+        it('should remove all amenities and add new ones', async () => {
+          const result = await venueService.updateVenueAmenities(
+            venueId,
+            updateAmenitiesDto,
+          );
+          expect(prismaMock.venue.findUnique).toHaveBeenCalledWith({
+            where: { id: venueId },
+          });
+          expect(prismaMock.amenityToVenue.deleteMany).toHaveBeenCalledWith({
+            where: { venueId },
+          });
+          expect(prismaMock.amenityToVenue.createMany).toHaveBeenCalledWith({
+            data: exampleAmenities.map((id) => ({ venueId, amenityId: id })),
+            skipDuplicates: true,
+          });
+          expect(result).toEqual({
+            venueId,
+            amenities: exampleAmenities,
           });
         });
       });
+      describe('and amenitiesIds is an empty array', () => {
+        beforeEach(() => {
+          prismaMock.amenityToVenue.deleteMany.mockResolvedValue({ count: 3 });
+        });
+        it('should remove all amenities and return venueId with empty array', async () => {
+          const dto = { amenitiesIds: [] };
+          const result = await venueService.updateVenueAmenities(venueId, dto);
+          expect(prismaMock.venue.findUnique).toHaveBeenCalledWith({
+            where: { id: venueId },
+          });
+          expect(prismaMock.amenityToVenue.deleteMany).toHaveBeenCalledWith({
+            where: { venueId },
+          });
+          expect(prismaMock.amenityToVenue.createMany).not.toHaveBeenCalled();
+          expect(result).toEqual({
+            venueId,
+            amenities: [],
+          });
+        });
+      });
+    });
+    describe('and venue does not exist', () => {
+      beforeEach(() => {
+        prismaMock.venue.findUnique.mockResolvedValue(null);
+      });
       it('should throw NotFoundException', async () => {
         await expect(
-          venueService.update(venuesArray[0].id, updateData),
+          venueService.updateVenueAmenities(999, updateAmenitiesDto),
+        ).rejects.toThrow(NotFoundException);
+      });
+    });
+    describe('and deleteMany throws error', () => {
+      beforeEach(() => {
+        prismaMock.venue.findUnique.mockResolvedValue(venuesArray[0]);
+        prismaMock.amenityToVenue.deleteMany.mockRejectedValue(
+          new Error('deleteMany error'),
+        );
+      });
+      it('should throw error', async () => {
+        await expect(
+          venueService.updateVenueAmenities(venueId, updateAmenitiesDto),
+        ).rejects.toThrow('deleteMany error');
+      });
+    });
+    describe('and createMany throws error', () => {
+      beforeEach(() => {
+        prismaMock.venue.findUnique.mockResolvedValue(venuesArray[0]);
+        prismaMock.amenityToVenue.deleteMany.mockResolvedValue({ count: 3 });
+        prismaMock.amenityToVenue.createMany.mockRejectedValue(
+          new Error('createMany error'),
+        );
+      });
+      it('should throw error', async () => {
+        await expect(
+          venueService.updateVenueAmenities(venueId, updateAmenitiesDto),
+        ).rejects.toThrow('createMany error');
+      });
+    });
+  });
+
+  describe('when updateVenueDetails is called', () => {
+    let updateDetailsDto: UpdateVenueDetailsDto;
+    let updatedVenue: any;
+    let venueId: number;
+    const newName = 'Nowa nazwa';
+    const newCapacity = 10;
+    const newDescription = 'Nowy opis';
+    beforeEach(() => {
+      venueId = venuesArray[0].id;
+      updateDetailsDto = {
+        name: newName,
+        capacity: newCapacity,
+        description: newDescription,
+      };
+      updatedVenue = {
+        ...venuesArray[0],
+        name: newName,
+        capacity: newCapacity,
+        description: newDescription,
+      };
+      prismaMock.venue.findUnique.mockClear();
+      prismaMock.venue.update.mockClear();
+    });
+    describe('and venue exists', () => {
+      beforeEach(() => {
+        prismaMock.venue.findUnique.mockResolvedValue(venuesArray[0]);
+      });
+      it('should update the venue with provided details and return updated venue', async () => {
+        prismaMock.venue.update.mockResolvedValue(updatedVenue);
+        const result = await venueService.updateVenueDetails(
+          venueId,
+          updateDetailsDto,
+        );
+        expect(prismaMock.venue.findUnique).toHaveBeenCalledWith({
+          where: { id: venueId },
+        });
+        expect(prismaMock.venue.update).toHaveBeenCalledWith({
+          where: { id: venueId },
+          data: {
+            name: newName,
+            capacity: newCapacity,
+            description: newDescription,
+          },
+        });
+        expect(result).toEqual(updatedVenue);
+      });
+      it('should not update anything if dto is empty, just return the venue', async () => {
+        prismaMock.venue.update.mockResolvedValue(venuesArray[0]);
+        const result = await venueService.updateVenueDetails(venueId, {});
+        expect(prismaMock.venue.update).toHaveBeenCalledWith({
+          where: { id: venueId },
+          data: {},
+        });
+        expect(result).toEqual(venuesArray[0]);
+      });
+      it('should throw error from update', async () => {
+        prismaMock.venue.update.mockRejectedValue(new Error('update error'));
+        await expect(
+          venueService.updateVenueDetails(venueId, updateDetailsDto),
+        ).rejects.toThrow('update error');
+      });
+    });
+    describe('and venue does not exist', () => {
+      beforeEach(() => {
+        prismaMock.venue.findUnique.mockResolvedValue(null);
+      });
+      it('should throw NotFoundException', async () => {
+        await expect(
+          venueService.updateVenueDetails(999, updateDetailsDto),
         ).rejects.toThrow(NotFoundException);
       });
     });

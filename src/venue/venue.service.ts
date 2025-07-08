@@ -325,6 +325,10 @@ export class VenueService {
         },
       });
 
+      if (!venues.length) {
+        throw new NotFoundException('No venues match filters');
+      }
+
       return venues;
     } catch (error) {
       throw error;

@@ -7,7 +7,10 @@ import { PrismaError } from '../database/prisma-error.enum';
 
 describe('The VenueTypeService', () => {
   let venueTypeService: VenueTypeService;
-  let prismaMock: any;
+  let getAllVenueTypesMock: jest.Mock;
+  let getOneVenueTypeMock: jest.Mock;
+  let createVenueTypeMock: jest.Mock;
+  let deleteVenueTypeMock: jest.Mock;
 
   const venueTypesArray = [
     { id: 1, name: 'Apartment' },
@@ -15,19 +18,25 @@ describe('The VenueTypeService', () => {
   ];
 
   beforeEach(async () => {
-    prismaMock = {
-      venueType: {
-        findMany: jest.fn(),
-        create: jest.fn(),
-        delete: jest.fn(),
-        findUnique: jest.fn(),
-      },
-    };
+    getAllVenueTypesMock = jest.fn();
+    getOneVenueTypeMock = jest.fn();
+    createVenueTypeMock = jest.fn();
+    deleteVenueTypeMock = jest.fn();
 
     const module = await Test.createTestingModule({
       providers: [
         VenueTypeService,
-        { provide: PrismaService, useValue: prismaMock },
+        {
+          provide: PrismaService,
+          useValue: {
+            venueType: {
+              findMany: getAllVenueTypesMock,
+              findUnique: getOneVenueTypeMock,
+              create: createVenueTypeMock,
+              delete: deleteVenueTypeMock,
+            },
+          },
+        },
       ],
     }).compile();
 
@@ -37,7 +46,7 @@ describe('The VenueTypeService', () => {
   describe('when getAll is called', () => {
     describe('and venue types exist', () => {
       beforeEach(() => {
-        prismaMock.venueType.findMany.mockResolvedValue(venueTypesArray);
+        getAllVenueTypesMock.mockResolvedValue(venueTypesArray);
       });
 
       it('should return all venue types', async () => {
@@ -48,7 +57,7 @@ describe('The VenueTypeService', () => {
 
     describe('and no venue types exist', () => {
       beforeEach(() => {
-        prismaMock.venueType.findMany.mockResolvedValue([]);
+        getAllVenueTypesMock.mockResolvedValue([]);
       });
 
       it('should return an empty array', async () => {
@@ -61,7 +70,7 @@ describe('The VenueTypeService', () => {
   describe('when getOne is called', () => {
     describe('and venue type exists', () => {
       beforeEach(() => {
-        prismaMock.venueType.findUnique.mockResolvedValue(venueTypesArray[0]);
+        getOneVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
       });
 
       it('should return the venue type', async () => {
@@ -72,7 +81,7 @@ describe('The VenueTypeService', () => {
 
     describe('and venue type does not exist', () => {
       beforeEach(() => {
-        prismaMock.venueType.findUnique.mockResolvedValue(null);
+        getOneVenueTypeMock.mockResolvedValue(null);
       });
 
       it('should throw NotFoundException', async () => {
@@ -86,7 +95,7 @@ describe('The VenueTypeService', () => {
   describe('when create is called', () => {
     describe('and creation succeeds', () => {
       beforeEach(() => {
-        prismaMock.venueType.create.mockResolvedValue(venueTypesArray[0]);
+        createVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
       });
 
       it('should return the created venue type', async () => {
@@ -97,7 +106,7 @@ describe('The VenueTypeService', () => {
 
     describe('and creation fails', () => {
       beforeEach(() => {
-        prismaMock.venueType.create.mockImplementation(() => {
+        createVenueTypeMock.mockImplementation(() => {
           throw new Error('Unexpected error');
         });
       });
@@ -113,7 +122,7 @@ describe('The VenueTypeService', () => {
   describe('when delete is called', () => {
     describe('and venue type exists', () => {
       beforeEach(() => {
-        prismaMock.venueType.delete.mockResolvedValue(venueTypesArray[0]);
+        deleteVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
       });
 
       it('should delete the venue type and return it', async () => {
@@ -124,7 +133,7 @@ describe('The VenueTypeService', () => {
 
     describe('and venue type does not exist', () => {
       beforeEach(() => {
-        prismaMock.venueType.delete.mockImplementation(() => {
+        deleteVenueTypeMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: '4.0.0',
@@ -141,7 +150,7 @@ describe('The VenueTypeService', () => {
 
     describe('and other error occurs during deletion', () => {
       beforeEach(() => {
-        prismaMock.venueType.delete.mockImplementation(() => {
+        deleteVenueTypeMock.mockImplementation(() => {
           throw new Error('Unexpected error');
         });
       });

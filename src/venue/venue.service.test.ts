@@ -1,7 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { VenueService } from './venue.service';
 import { PrismaService } from '../database/prisma.service';
-import { NotFoundException } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
 import { CreateVenueDto } from './dto/create-venue.dto';
@@ -10,6 +9,7 @@ import { VenueDto } from './dto/venue.dto';
 import { HttpService } from '@nestjs/axios';
 import { UpdateVenueAmenitiesDto } from './dto/update-venue-amenities.dto';
 import { UpdateVenueDetailsDto } from './dto/update-venue-details.dto';
+import { NotFoundException } from '@nestjs/common';
 
 describe('The VenueService', () => {
   let venueService: VenueService;
@@ -74,6 +74,7 @@ describe('The VenueService', () => {
         postalCode: '54321',
         city: 'Beachville',
         ownerId: 1,
+        venueTypeId: 1,
         owner: {
           id: 1,
           name: 'Owner One',
@@ -111,6 +112,7 @@ describe('The VenueService', () => {
         postalCode: '67890',
         city: 'Woodtown',
         ownerId: 2,
+        venueTypeId: 2,
         owner: {
           id: 2,
           name: 'Owner Two',
@@ -517,18 +519,16 @@ describe('The VenueService', () => {
     });
   });
 
-  describe('wheen getCombinedAmenities is called', () => {
+  describe('when getCombinedAmenities is called', () => {
     it('should return combined unique amenity IDs from amenities and occasion amenities', async () => {
       const amenities = [1, 2];
       const occasionIds = [10];
-
       prismaMock.occasion.findMany.mockResolvedValue([
         {
           id: 10,
           amenities: [{ id: 2 }, { id: 3 }],
         },
       ]);
-
       const result = await venueService.getCombinedAmenities(
         amenities,
         occasionIds,
@@ -539,7 +539,6 @@ describe('The VenueService', () => {
     it('should return only initial amenities if no occasionIds provided', async () => {
       const amenities = [1, 4];
       const occasionIds: number[] = [];
-
       const result = await venueService.getCombinedAmenities(
         amenities,
         occasionIds,
@@ -550,14 +549,213 @@ describe('The VenueService', () => {
     it('should return only amenities if no matched occasions found', async () => {
       const amenities = [5, 6];
       const occasionIds = [99];
-
       prismaMock.occasion.findMany.mockResolvedValue([]);
-
       const result = await venueService.getCombinedAmenities(
         amenities,
         occasionIds,
       );
       expect(result).toEqual([5, 6]);
+    });
+  });
+
+  describe('when findWithFilters is called', () => {
+    beforeEach(() => {
+      venueService.getCombinedAmenities = jest.fn().mockResolvedValue([1, 2]);
+    });
+
+    describe('and filters include location and radius', () => {
+      beforeEach(() => {
+        prismaMock.venue.findMany.mockResolvedValue([venuesArray[0]]);
+      });
+
+      it('should build correct where for latitude/longitude and call findMany', async () => {
+        const filters = {
+          latitude: 52.22,
+          longitude: 21.01,
+          radiusKm: 10,
+        };
+
+        // Przelicz to co przelicza funkcja
+        const kmInDegree = 111;
+        const deltaLat = filters.radiusKm / kmInDegree;
+        const deltaLng =
+          filters.radiusKm /
+          (kmInDegree * Math.cos((filters.latitude * Math.PI) / 180));
+
+        const expectedLatitude = {
+          gte: filters.latitude - deltaLat,
+          lte: filters.latitude + deltaLat,
+        };
+        const expectedLongitude = {
+          gte: filters.longitude - deltaLng,
+          lte: filters.longitude + deltaLng,
+        };
+
+        const result = await venueService.findWithFilters(filters);
+
+        expect(prismaMock.venue.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              latitude: expectedLatitude,
+              longitude: expectedLongitude,
+            }),
+            include: expect.any(Object),
+          }),
+        );
+        expect(result).toEqual([venuesArray[0]]);
+      });
+    });
+
+    describe('and filters are provided with full example', () => {
+      beforeEach(() => {
+        prismaMock.venue.findMany.mockResolvedValue([venuesArray[0]]);
+      });
+
+      it('should call findMany with all filter values', async () => {
+        const filters = {
+          amenities: venuesArray[0].amenities.map((a: { id: number }) => a.id),
+          occasions: [],
+          venueTypeId: 1,
+          pricePerNightInEURCentMin: 10000,
+          pricePerNightInEURCentMax: 20000,
+          guests: 2,
+          dateStart: '2025-07-01',
+          dateEnd: '2025-07-02',
+          latitude: 52.22,
+          longitude: 21.01,
+          radiusKm: 10,
+        };
+
+        const kmInDegree = 111;
+        const deltaLat = filters.radiusKm / kmInDegree;
+        const deltaLng =
+          filters.radiusKm /
+          (kmInDegree * Math.cos((filters.latitude * Math.PI) / 180));
+
+        const expectedLatitude = {
+          gte: filters.latitude - deltaLat,
+          lte: filters.latitude + deltaLat,
+        };
+        const expectedLongitude = {
+          gte: filters.longitude - deltaLng,
+          lte: filters.longitude + deltaLng,
+        };
+
+        const result = await venueService.findWithFilters(filters);
+
+        expect(venueService.getCombinedAmenities).toHaveBeenCalledWith(
+          [1, 2],
+          [],
+        );
+        expect(prismaMock.venue.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              AND: [
+                { amenityToVenues: { some: { amenityId: 1 } } },
+                { amenityToVenues: { some: { amenityId: 2 } } },
+              ],
+              venueTypeId: filters.venueTypeId,
+              pricePerNightInEURCent: {
+                gte: filters.pricePerNightInEURCentMin,
+                lte: filters.pricePerNightInEURCentMax,
+              },
+              capacity: { gte: filters.guests },
+              reservations: {
+                none: {
+                  isPendingRating: true,
+                  dateStart: { lt: new Date(filters.dateEnd) },
+                  dateEnd: { gt: new Date(filters.dateStart) },
+                },
+              },
+              latitude: expectedLatitude,
+              longitude: expectedLongitude,
+            }),
+            include: expect.any(Object),
+          }),
+        );
+        expect(result).toEqual([venuesArray[0]]);
+      });
+    });
+
+    describe('and only guests and price filters are provided', () => {
+      beforeEach(() => {
+        (venueService.getCombinedAmenities as jest.Mock).mockResolvedValue([]);
+        prismaMock.venue.findMany.mockResolvedValue([venuesArray[1]]);
+      });
+
+      it('should call findMany with only these filters', async () => {
+        const filters = {
+          guests: 2,
+          pricePerNightInEURCentMin: 5000,
+          pricePerNightInEURCentMax: 10000,
+        };
+
+        const result = await venueService.findWithFilters(filters);
+
+        expect(venueService.getCombinedAmenities).toHaveBeenCalledWith([], []);
+        expect(prismaMock.venue.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: expect.objectContaining({
+              capacity: { gte: filters.guests },
+              pricePerNightInEURCent: {
+                gte: filters.pricePerNightInEURCentMin,
+                lte: filters.pricePerNightInEURCentMax,
+              },
+            }),
+            include: expect.any(Object),
+          }),
+        );
+        expect(result).toEqual([venuesArray[1]]);
+      });
+    });
+
+    describe('and no venue matches filters', () => {
+      beforeEach(() => {
+        prismaMock.venue.findMany.mockResolvedValue([]);
+      });
+
+      it('should throw NotFoundException', async () => {
+        const filters = {
+          amenities: [999],
+          occasions: [],
+          venueTypeId: 99,
+          pricePerNightInEURCentMin: 50000,
+          pricePerNightInEURCentMax: 60000,
+          guests: 10,
+          dateStart: '2030-01-01',
+          dateEnd: '2030-01-05',
+          latitude: 0,
+          longitude: 0,
+          radiusKm: 1,
+        };
+        await expect(venueService.findWithFilters(filters)).rejects.toThrow(
+          NotFoundException,
+        );
+      });
+    });
+
+    describe('and filters are not provided', () => {
+      beforeEach(() => {
+        (venueService.getCombinedAmenities as jest.Mock).mockResolvedValue([]);
+        prismaMock.venue.findMany.mockResolvedValue([
+          venuesArray[0],
+          venuesArray[1],
+        ]);
+      });
+
+      it('should return all venues', async () => {
+        const filters = {};
+        const result = await venueService.findWithFilters(filters);
+
+        expect(venueService.getCombinedAmenities).toHaveBeenCalledWith([], []);
+        expect(prismaMock.venue.findMany).toHaveBeenCalledWith(
+          expect.objectContaining({
+            where: {},
+            include: expect.any(Object),
+          }),
+        );
+        expect(result).toEqual([venuesArray[0], venuesArray[1]]);
+      });
     });
   });
 });

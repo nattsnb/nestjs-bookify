@@ -22,6 +22,7 @@ describe('The AuthenticationService', () => {
   let response: Response;
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     getByEmailMock = jest.fn();
     createAuthenticationMock = jest.fn();
 

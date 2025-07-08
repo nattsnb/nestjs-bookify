@@ -13,6 +13,7 @@ describe('The FavouriteService', () => {
   let deleteFavouriteMock: jest.Mock;
   let favouritesArray: Favourite[];
   beforeEach(async () => {
+    jest.clearAllMocks();
     findManyFavouriteMock = jest.fn();
     findUniqueFavouriteMock = jest.fn();
     createFavouriteMock = jest.fn();

@@ -17,6 +17,7 @@ describe('The CategoryService', () => {
   let deleteCategoryMock: jest.Mock;
   let categoriesArray: Category[];
   beforeEach(async () => {
+    jest.clearAllMocks();
     findManyCategoryMock = jest.fn();
     findUniqueCategoryMock = jest.fn();
     createCategoryMock = jest.fn();

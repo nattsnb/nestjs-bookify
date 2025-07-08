@@ -16,6 +16,7 @@ describe('The ReservationService', () => {
   let reservationsArray: any[];
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     findManyReservationMock = jest.fn();
     findUniqueReservationMock = jest.fn();
     createReservationMock = jest.fn();

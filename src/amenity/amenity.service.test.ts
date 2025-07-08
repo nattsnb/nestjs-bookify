@@ -17,6 +17,7 @@ describe('The AmenityService', () => {
   let amenitiesArray: Amenity[];
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     findUniqueAmenityMock = jest.fn();
     findManyAmenityMock = jest.fn();
     createAmenityMock = jest.fn();

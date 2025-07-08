@@ -16,6 +16,7 @@ describe('The OccasionService', () => {
   let deleteOccasionMock: jest.Mock;
   let occasionsArray: Occasion[];
   beforeEach(async () => {
+    jest.clearAllMocks();
     findOccasionManyMock = jest.fn();
     findOccasionUniqueMock = jest.fn();
     createOccasionMock = jest.fn();

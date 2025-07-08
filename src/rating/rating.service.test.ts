@@ -15,6 +15,7 @@ describe('The RatingService', () => {
   let ratingsArray: Rating[];
 
   beforeEach(async () => {
+    jest.clearAllMocks();
     findManyRaitingMock = jest.fn();
     findUniqueRaitingMock = jest.fn();
     createRaitingMock = jest.fn();

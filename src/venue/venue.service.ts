@@ -180,6 +180,13 @@ export class VenueService {
 
   async updateVenueAmenities(venueId: number, dto: UpdateVenueAmenitiesDto) {
     try {
+      const existingVenue = await this.prismaService.venue.findUnique({
+        where: { id: venueId },
+      });
+      if (!existingVenue) {
+        throw new NotFoundException(`Venue with ID ${venueId} not found`);
+      }
+
       const { amenitiesIds } = dto;
 
       await this.prismaService.amenityToVenue.deleteMany({

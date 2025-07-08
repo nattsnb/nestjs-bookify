@@ -56,10 +56,9 @@ describe('The FavouriteService', () => {
       beforeEach(() => {
         findManyFavouriteMock.mockResolvedValue([]);
       });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await favouriteService.getAll();
-        }).rejects.toThrow(NotFoundException);
+      it('should return an empty array', async () => {
+        const result = await favouriteService.getAll();
+        expect(result).toEqual([]);
       });
     });
   });

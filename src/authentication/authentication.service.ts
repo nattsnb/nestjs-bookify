@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { RequestWithUser } from './request-with-user';
+import { Prisma } from '@prisma/client';
+import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
 export class AuthenticationService {
@@ -19,13 +25,23 @@ export class AuthenticationService {
   ) {}
 
   async signUp(signUpData: SignUpDto) {
-    const hashedPassword = await bcrypt.hash(signUpData.password, 10);
-    return this.usersService.create({
-      name: signUpData.name,
-      email: signUpData.email,
-      password: hashedPassword,
-      phoneNumber: signUpData.phoneNumber,
-    });
+    try {
+      const hashedPassword = await bcrypt.hash(signUpData.password, 10);
+      return await this.usersService.create({
+        name: signUpData.name,
+        email: signUpData.email,
+        password: hashedPassword,
+        phoneNumber: signUpData.phoneNumber,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.UniqueConstraintViolated
+      ) {
+        throw new ConflictException('Email already exists');
+      }
+      throw error;
+    }
   }
 
   async logIn(logInData: LogInDto, response: Response) {

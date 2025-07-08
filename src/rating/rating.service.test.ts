@@ -70,10 +70,9 @@ describe('The RatingService', () => {
       beforeEach(() => {
         findManyRaitingMock.mockResolvedValue([]);
       });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await ratingService.getAll();
-        }).rejects.toThrow(NotFoundException);
+      it('should return an empty array', async () => {
+        const result = await ratingService.getAll();
+        expect(result).toEqual([]);
       });
     });
   });

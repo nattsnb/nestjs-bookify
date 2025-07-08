@@ -51,10 +51,9 @@ describe('The VenueTypeService', () => {
         prismaMock.venueType.findMany.mockResolvedValue([]);
       });
 
-      it('should throw NotFoundException', async () => {
-        await expect(venueTypeService.getAll()).rejects.toThrow(
-          NotFoundException,
-        );
+      it('should return an empty array', async () => {
+        const result = await venueTypeService.getAll();
+        expect(result).toEqual([]);
       });
     });
   });

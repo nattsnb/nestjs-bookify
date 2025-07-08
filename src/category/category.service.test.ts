@@ -65,10 +65,9 @@ describe('The CategoryService', () => {
       beforeEach(() => {
         findManyCategoryMock.mockResolvedValue([]);
       });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await categoryService.getAll();
-        }).rejects.toThrow(NotFoundException);
+      it('should return an empty array', async () => {
+        const result = await categoryService.getAll();
+        expect(result).toEqual([]);
       });
     });
   });

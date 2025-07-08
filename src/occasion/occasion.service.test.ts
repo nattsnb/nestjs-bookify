@@ -61,10 +61,9 @@ describe('The OccasionService', () => {
       beforeEach(() => {
         findOccasionManyMock.mockResolvedValue([]);
       });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await occasionService.getAll();
-        }).rejects.toThrow(NotFoundException);
+      it('should return an empty array', async () => {
+        const result = await occasionService.getAll();
+        expect(result).toEqual([]);
       });
     });
   });

@@ -9,12 +9,8 @@ import { PrismaError } from '../database/prisma-error.enum';
 export class OccasionService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAll() {
-    const occasions = await this.prismaService.occasion.findMany();
-    if (!occasions.length) {
-      throw new NotFoundException('No occasions found');
-    }
-    return occasions;
+  getAll() {
+    return this.prismaService.occasion.findMany();
   }
 
   async create(createOccasionData: CreateOccasionDto) {

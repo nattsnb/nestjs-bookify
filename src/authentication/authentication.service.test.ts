@@ -3,7 +3,7 @@ import { Test } from '@nestjs/testing';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtModule, JwtService } from '@nestjs/jwt';
 import { UserService } from '../user/user.service';
-import { NotFoundException } from '@nestjs/common';
+import { ConflictException, NotFoundException } from '@nestjs/common';
 import { WrongCredentialsException } from './wrong-credentials-exception';
 import { SignUpDto } from './dto/sign-up.dto';
 import { LogInDto } from './dto/log-in.dto';
@@ -102,7 +102,7 @@ describe('The AuthenticationService', () => {
         }),
       );
       await expect(authenticationService.signUp(signUpData)).rejects.toThrow(
-        Prisma.PrismaClientKnownRequestError,
+        ConflictException,
       );
     });
   });

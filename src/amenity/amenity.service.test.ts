@@ -64,10 +64,9 @@ describe('The AmenityService', () => {
       beforeEach(() => {
         findManyAmenityMock.mockResolvedValue([]);
       });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await amenityService.getAll();
-        }).rejects.toThrow(NotFoundException);
+      it('should return an empty array', async () => {
+        const result = await amenityService.getAll();
+        expect(result).toEqual([]);
       });
     });
   });

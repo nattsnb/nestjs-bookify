@@ -62,16 +62,24 @@ describe('The ReservationService', () => {
   });
 
   describe('when getAll is called', () => {
-    it('should return all reservations if they exist', async () => {
-      findManyReservationMock.mockResolvedValue(reservationsArray);
-      const result = await reservationService.getAll();
-      expect(result).toEqual(reservationsArray);
+    describe('and reservations exist', () => {
+      beforeEach(() => {
+        findManyReservationMock.mockResolvedValue(reservationsArray);
+      });
+      it('should return all reservations', async () => {
+        const result = await reservationService.getAll();
+        expect(result).toEqual(reservationsArray);
+      });
     });
-    it('should throw NotFoundException if no reservations exist', async () => {
-      findManyReservationMock.mockResolvedValue([]);
-      await expect(reservationService.getAll()).rejects.toThrow(
-        NotFoundException,
-      );
+
+    describe('and no reservations exist', () => {
+      beforeEach(() => {
+        findManyReservationMock.mockResolvedValue([]);
+      });
+      it('should return an empty array', async () => {
+        const result = await reservationService.getAll();
+        expect(result).toEqual([]);
+      });
     });
   });
 

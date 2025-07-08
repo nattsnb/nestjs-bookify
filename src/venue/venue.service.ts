@@ -18,25 +18,13 @@ export class VenueService {
     private readonly httpService: HttpService,
   ) {}
 
-  async getAll() {
-    try {
-      const venues = await this.prismaService.venue.findMany({
-        include: {
-          owner: true,
-          amenityToVenues: { include: { amenity: true } },
-        },
-      });
-
-      if (!venues.length) {
-        throw new NotFoundException('No venues found');
-      }
-
-      return venues.map((venue) => ({
-        ...venue,
-      }));
-    } catch (error) {
-      throw error;
-    }
+  getAll() {
+    return this.prismaService.venue.findMany({
+      include: {
+        owner: true,
+        amenityToVenues: { include: { amenity: true } },
+      },
+    });
   }
 
   async create(createVenueData: CreateVenueDto, userId: number) {

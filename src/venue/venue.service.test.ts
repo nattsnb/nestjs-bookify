@@ -162,8 +162,9 @@ describe('The VenueService', () => {
       beforeEach(() => {
         prismaMock.venue.findMany.mockResolvedValue([]);
       });
-      it('should throw NotFoundException', async () => {
-        await expect(venueService.getAll()).rejects.toThrow(NotFoundException);
+      it('should return an empty array', async () => {
+        const result = await venueService.getAll();
+        expect(result).toEqual([]);
       });
     });
   });

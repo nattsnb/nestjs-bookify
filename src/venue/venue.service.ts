@@ -377,7 +377,6 @@ export class VenueService {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
 
     try {
-
       const response = await this.httpService.axiosRef.get<NominatimResult>(
         url,
         {

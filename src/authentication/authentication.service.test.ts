@@ -15,7 +15,7 @@ import { PrismaError } from '../database/prisma-error.enum';
 
 describe('The AuthenticationService', () => {
   let getByEmailMock: jest.Mock;
-  let createMock: jest.Mock;
+  let createAuthenticationMock: jest.Mock;
   let authenticationService: AuthenticationService;
   let password: string;
   let userData: User;
@@ -23,7 +23,7 @@ describe('The AuthenticationService', () => {
 
   beforeEach(async () => {
     getByEmailMock = jest.fn();
-    createMock = jest.fn();
+    createAuthenticationMock = jest.fn();
 
     const jwtSignMock = jest.fn().mockReturnValue('mocked-token');
     const configGetMock = jest.fn().mockReturnValue('43200');
@@ -35,7 +35,7 @@ describe('The AuthenticationService', () => {
           provide: UserService,
           useValue: {
             getByEmail: getByEmailMock,
-            create: createMock,
+            create: createAuthenticationMock,
           },
         },
         {
@@ -88,13 +88,13 @@ describe('The AuthenticationService', () => {
     });
 
     it('should return valid user when data is correct', async () => {
-      createMock.mockResolvedValue(userData);
+      createAuthenticationMock.mockResolvedValue(userData);
       const result = await authenticationService.signUp(signUpData);
       expect(result).toBe(userData);
     });
 
     it('should throw ConflictException when email is already taken', async () => {
-      createMock.mockRejectedValue(
+      createAuthenticationMock.mockRejectedValue(
         new Prisma.PrismaClientKnownRequestError('Unique constraint failed', {
           code: PrismaError.UniqueConstraintViolated,
           clientVersion: Prisma.prismaVersion.client,

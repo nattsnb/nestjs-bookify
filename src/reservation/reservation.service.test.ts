@@ -8,25 +8,27 @@ import { PrismaError } from '../database/prisma-error.enum';
 
 describe('The ReservationService', () => {
   let reservationService: ReservationService;
-  let prismaMock: {
-    reservation: {
-      findMany: jest.Mock;
-      findUnique: jest.Mock;
-      create: jest.Mock;
-      delete: jest.Mock;
-      update: jest.Mock;
-    };
-  };
-  let reservationsArray: any;
+  let findManyReservationMock: jest.Mock;
+  let findUniqueReservationMock: jest.Mock;
+  let createReservationMock: jest.Mock;
+  let deleteReservationMock: jest.Mock;
+  let updateReservationMock: jest.Mock;
+  let reservationsArray: any[];
 
   beforeEach(async () => {
-    prismaMock = {
+    findManyReservationMock = jest.fn();
+    findUniqueReservationMock = jest.fn();
+    createReservationMock = jest.fn();
+    deleteReservationMock = jest.fn();
+    updateReservationMock = jest.fn();
+
+    const prismaMock = {
       reservation: {
-        findMany: jest.fn(),
-        findUnique: jest.fn(),
-        create: jest.fn(),
-        delete: jest.fn(),
-        update: jest.fn(),
+        findMany: findManyReservationMock,
+        findUnique: findUniqueReservationMock,
+        create: createReservationMock,
+        delete: deleteReservationMock,
+        update: updateReservationMock,
       },
     };
 
@@ -60,12 +62,12 @@ describe('The ReservationService', () => {
 
   describe('when getAll is called', () => {
     it('should return all reservations if they exist', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue(reservationsArray);
+      findManyReservationMock.mockResolvedValue(reservationsArray);
       const result = await reservationService.getAll();
       expect(result).toEqual(reservationsArray);
     });
     it('should throw NotFoundException if no reservations exist', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([]);
+      findManyReservationMock.mockResolvedValue([]);
       await expect(reservationService.getAll()).rejects.toThrow(
         NotFoundException,
       );
@@ -74,12 +76,12 @@ describe('The ReservationService', () => {
 
   describe('when getOne is called', () => {
     it('should return the reservation if found', async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(reservationsArray[0]);
+      findUniqueReservationMock.mockResolvedValue(reservationsArray[0]);
       const result = await reservationService.getOne(reservationsArray[0].id);
       expect(result).toEqual(reservationsArray[0]);
     });
     it('should throw NotFoundException if not found', async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(null);
+      findUniqueReservationMock.mockResolvedValue(null);
       await expect(reservationService.getOne(999)).rejects.toThrow(
         NotFoundException,
       );
@@ -88,14 +90,14 @@ describe('The ReservationService', () => {
 
   describe('when getByVenue is called', () => {
     it('should return reservations if found', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([reservationsArray[0]]);
+      findManyReservationMock.mockResolvedValue([reservationsArray[0]]);
       const result = await reservationService.getByVenue(
         reservationsArray[0].venueId,
       );
       expect(result).toEqual([reservationsArray[0]]);
     });
     it('should throw NotFoundException if none found', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([]);
+      findManyReservationMock.mockResolvedValue([]);
       await expect(reservationService.getByVenue(999)).rejects.toThrow(
         NotFoundException,
       );
@@ -104,14 +106,14 @@ describe('The ReservationService', () => {
 
   describe('when getByUser is called', () => {
     it('should return reservations if found', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([reservationsArray[0]]);
+      findManyReservationMock.mockResolvedValue([reservationsArray[0]]);
       const result = await reservationService.getByUser(
         reservationsArray[0].userId,
       );
       expect(result).toEqual([reservationsArray[0]]);
     });
     it('should throw NotFoundException if none found', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([]);
+      findManyReservationMock.mockResolvedValue([]);
       await expect(reservationService.getByUser(999)).rejects.toThrow(
         NotFoundException,
       );
@@ -120,8 +122,8 @@ describe('The ReservationService', () => {
 
   describe('when changeIsPendingRating is called', () => {
     it('should toggle isPendingRating and return updated reservation', async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(reservationsArray[0]);
-      prismaMock.reservation.update.mockResolvedValue({
+      findUniqueReservationMock.mockResolvedValue(reservationsArray[0]);
+      updateReservationMock.mockResolvedValue({
         ...reservationsArray[0],
         isPendingRating: false,
       });
@@ -131,7 +133,7 @@ describe('The ReservationService', () => {
       expect(result.isPendingRating).toBe(false);
     });
     it('should throw NotFoundException if reservation not found', async () => {
-      prismaMock.reservation.findUnique.mockResolvedValue(null);
+      findUniqueReservationMock.mockResolvedValue(null);
       await expect(
         reservationService.changeIsPendingRating(999),
       ).rejects.toThrow(NotFoundException);
@@ -149,8 +151,8 @@ describe('The ReservationService', () => {
     });
     describe('and venue is available', () => {
       beforeEach(() => {
-        prismaMock.reservation.findMany.mockResolvedValue([]);
-        prismaMock.reservation.create.mockResolvedValue(reservationsArray[0]);
+        findManyReservationMock.mockResolvedValue([]);
+        createReservationMock.mockResolvedValue(reservationsArray[0]);
       });
       it('should create the reservation', async () => {
         const result = await reservationService.create(
@@ -162,9 +164,7 @@ describe('The ReservationService', () => {
     });
     describe('and dates are already taken', () => {
       beforeEach(() => {
-        prismaMock.reservation.findMany.mockResolvedValue([
-          reservationsArray[0],
-        ]);
+        findManyReservationMock.mockResolvedValue([reservationsArray[0]]);
       });
       it('should throw ConflictException', async () => {
         await expect(
@@ -177,8 +177,8 @@ describe('The ReservationService', () => {
     });
     describe('and venue or user not found', () => {
       beforeEach(() => {
-        prismaMock.reservation.findMany.mockResolvedValue([]);
-        prismaMock.reservation.create.mockImplementation(() => {
+        findManyReservationMock.mockResolvedValue([]);
+        createReservationMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('fail', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -199,7 +199,7 @@ describe('The ReservationService', () => {
   describe('when delete is called', () => {
     describe('and reservation exists', () => {
       beforeEach(() => {
-        prismaMock.reservation.delete.mockResolvedValue(reservationsArray[0]);
+        deleteReservationMock.mockResolvedValue(reservationsArray[0]);
       });
       it('should return the deleted reservation', async () => {
         const result = await reservationService.delete(reservationsArray[0].id);
@@ -208,7 +208,7 @@ describe('The ReservationService', () => {
     });
     describe('and reservation does not exist', () => {
       beforeEach(() => {
-        prismaMock.reservation.delete.mockImplementation(() => {
+        deleteReservationMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('fail', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -225,7 +225,7 @@ describe('The ReservationService', () => {
 
   describe('when checkAvailability is called', () => {
     it('should return available: false if conflict exists', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([reservationsArray[0]]);
+      findManyReservationMock.mockResolvedValue([reservationsArray[0]]);
       const result = await reservationService.checkAvailability(
         reservationsArray[0].venueId,
         reservationsArray[0].dateStart,
@@ -234,7 +234,7 @@ describe('The ReservationService', () => {
       expect(result.available).toBe(false);
     });
     it('should return available: true if no conflicts found', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([]);
+      findManyReservationMock.mockResolvedValue([]);
       const result = await reservationService.checkAvailability(
         reservationsArray[0].venueId,
         reservationsArray[0].dateStart,
@@ -246,7 +246,7 @@ describe('The ReservationService', () => {
 
   describe('when getOccupiedDates is called', () => {
     it('should return all occupied dates within each reservation period', async () => {
-      prismaMock.reservation.findMany.mockResolvedValue([reservationsArray[0]]);
+      findManyReservationMock.mockResolvedValue([reservationsArray[0]]);
       const result = await reservationService.getOccupiedDates(
         reservationsArray[0].venueId,
       );

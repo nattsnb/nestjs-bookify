@@ -9,19 +9,19 @@ import { PrismaError } from '../database/prisma-error.enum';
 
 describe('The AmenityService', () => {
   let amenityService: AmenityService;
-  let findUniqueMock: jest.Mock;
-  let findManyMock: jest.Mock;
-  let createMock: jest.Mock;
-  let updateMock: jest.Mock;
-  let deleteMock: jest.Mock;
+  let findUniqueAmenityMock: jest.Mock;
+  let findManyAmenityMock: jest.Mock;
+  let createAmenityMock: jest.Mock;
+  let updateAmenityMock: jest.Mock;
+  let deleteAmenityMock: jest.Mock;
   let amenitiesArray: Amenity[];
 
   beforeEach(async () => {
-    findUniqueMock = jest.fn();
-    findManyMock = jest.fn();
-    createMock = jest.fn();
-    updateMock = jest.fn();
-    deleteMock = jest.fn();
+    findUniqueAmenityMock = jest.fn();
+    findManyAmenityMock = jest.fn();
+    createAmenityMock = jest.fn();
+    updateAmenityMock = jest.fn();
+    deleteAmenityMock = jest.fn();
 
     const module = await Test.createTestingModule({
       providers: [
@@ -30,11 +30,11 @@ describe('The AmenityService', () => {
           provide: PrismaService,
           useValue: {
             amenity: {
-              findUnique: findUniqueMock,
-              findMany: findManyMock,
-              create: createMock,
-              update: updateMock,
-              delete: deleteMock,
+              findUnique: findUniqueAmenityMock,
+              findMany: findManyAmenityMock,
+              create: createAmenityMock,
+              update: updateAmenityMock,
+              delete: deleteAmenityMock,
             },
           },
         },
@@ -52,7 +52,7 @@ describe('The AmenityService', () => {
   describe('when the getAll function is called', () => {
     describe('and amenities exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue(amenitiesArray);
+        findManyAmenityMock.mockResolvedValue(amenitiesArray);
       });
       it('should return the list of amenities', async () => {
         const result = await amenityService.getAll();
@@ -61,7 +61,7 @@ describe('The AmenityService', () => {
     });
     describe('and no amenities exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([]);
+        findManyAmenityMock.mockResolvedValue([]);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -74,7 +74,7 @@ describe('The AmenityService', () => {
   describe('when the getOne function is called', () => {
     describe('and amenity with given ID exists', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(amenitiesArray[0]);
+        findUniqueAmenityMock.mockResolvedValue(amenitiesArray[0]);
       });
       it('should return the amenity', async () => {
         const result = await amenityService.getOne(amenitiesArray[0].id);
@@ -83,7 +83,7 @@ describe('The AmenityService', () => {
     });
     describe('and amenity with given ID does not exist', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(null);
+        findUniqueAmenityMock.mockResolvedValue(null);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -103,7 +103,7 @@ describe('The AmenityService', () => {
     });
     describe('and the create method returns the amenity', () => {
       beforeEach(() => {
-        createMock.mockResolvedValue(amenitiesArray[0]);
+        createAmenityMock.mockResolvedValue(amenitiesArray[0]);
       });
       it('should return the created amenity', async () => {
         const result = await amenityService.create(createData);
@@ -112,7 +112,7 @@ describe('The AmenityService', () => {
     });
     describe('and the category does not exist', () => {
       beforeEach(() => {
-        createMock.mockImplementation(() => {
+        createAmenityMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -143,7 +143,7 @@ describe('The AmenityService', () => {
           name: newName,
           categoryId: amenitiesArray[0].categoryId,
         };
-        updateMock.mockResolvedValue(updateResult);
+        updateAmenityMock.mockResolvedValue(updateResult);
       });
       it('should return the updated amenity', async () => {
         const result = await amenityService.update(
@@ -156,7 +156,7 @@ describe('The AmenityService', () => {
 
     describe('and amenity or category does not exist', () => {
       beforeEach(() => {
-        updateMock.mockImplementation(() => {
+        updateAmenityMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -174,7 +174,7 @@ describe('The AmenityService', () => {
   describe('when the delete function is called', () => {
     describe('and amenity exists', () => {
       beforeEach(() => {
-        deleteMock.mockResolvedValue(amenitiesArray[0]);
+        deleteAmenityMock.mockResolvedValue(amenitiesArray[0]);
       });
       it('should return the deleted amenity', async () => {
         const result = await amenityService.delete(amenitiesArray[0].id);
@@ -184,7 +184,7 @@ describe('The AmenityService', () => {
 
     describe('and amenity does not exist', () => {
       beforeEach(() => {
-        deleteMock.mockImplementation(() => {
+        deleteAmenityMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,

@@ -2,7 +2,7 @@ import { Test } from '@nestjs/testing';
 import { CategoryService } from './category.service';
 import { PrismaService } from '../database/prisma.service';
 import { NotFoundException } from '@nestjs/common';
-import { Prisma, Category, Amenity } from '@prisma/client';
+import { Prisma, Category } from '@prisma/client';
 import { CreateCategoryDto } from './dto/create-category.dto';
 import { UpdateCategoryDto } from './dto/update-category.dto';
 import { PrismaError } from '../database/prisma-error.enum';
@@ -10,18 +10,18 @@ import { CategoryDto } from './dto/category.dto';
 
 describe('The CategoryService', () => {
   let categoryService: CategoryService;
-  let findManyMock: jest.Mock;
-  let findUniqueMock: jest.Mock;
-  let createMock: jest.Mock;
-  let updateMock: jest.Mock;
-  let deleteMock: jest.Mock;
+  let findManyCategoryMock: jest.Mock;
+  let findUniqueCategoryMock: jest.Mock;
+  let createCategoryMock: jest.Mock;
+  let updateCategoryMock: jest.Mock;
+  let deleteCategoryMock: jest.Mock;
   let categoriesArray: Category[];
   beforeEach(async () => {
-    findManyMock = jest.fn();
-    findUniqueMock = jest.fn();
-    createMock = jest.fn();
-    updateMock = jest.fn();
-    deleteMock = jest.fn();
+    findManyCategoryMock = jest.fn();
+    findUniqueCategoryMock = jest.fn();
+    createCategoryMock = jest.fn();
+    updateCategoryMock = jest.fn();
+    deleteCategoryMock = jest.fn();
     const module = await Test.createTestingModule({
       providers: [
         CategoryService,
@@ -29,14 +29,14 @@ describe('The CategoryService', () => {
           provide: PrismaService,
           useValue: {
             category: {
-              findMany: findManyMock,
-              findUnique: findUniqueMock,
-              create: createMock,
-              update: updateMock,
-              delete: deleteMock,
+              findMany: findManyCategoryMock,
+              findUnique: findUniqueCategoryMock,
+              create: createCategoryMock,
+              update: updateCategoryMock,
+              delete: deleteCategoryMock,
             },
             amenity: {
-              findUnique: findUniqueMock,
+              findUnique: findUniqueCategoryMock,
             },
           },
         },
@@ -53,7 +53,7 @@ describe('The CategoryService', () => {
   describe('when getAll is called', () => {
     describe('and categories exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue(categoriesArray);
+        findManyCategoryMock.mockResolvedValue(categoriesArray);
       });
       it('should return the categories', async () => {
         const result = await categoryService.getAll();
@@ -62,7 +62,7 @@ describe('The CategoryService', () => {
     });
     describe('and no categories exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([]);
+        findManyCategoryMock.mockResolvedValue([]);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -75,7 +75,7 @@ describe('The CategoryService', () => {
   describe('when getOne is called', () => {
     describe('and the category exists', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(categoriesArray[0]);
+        findUniqueCategoryMock.mockResolvedValue(categoriesArray[0]);
       });
       it('should return the category', async () => {
         const result = await categoryService.getOne(categoriesArray[0].id);
@@ -84,7 +84,7 @@ describe('The CategoryService', () => {
     });
     describe('and the category does not exist', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(null);
+        findUniqueCategoryMock.mockResolvedValue(null);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -104,12 +104,12 @@ describe('The CategoryService', () => {
     });
     describe('and all amenities exist', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue({});
-        createMock.mockResolvedValue(categoriesArray[0]);
+        findUniqueCategoryMock.mockResolvedValue({});
+        createCategoryMock.mockResolvedValue(categoriesArray[0]);
       });
       it('should call create with correct amenities connect values', async () => {
         await categoryService.create(createData);
-        expect(createMock).toHaveBeenCalledWith({
+        expect(createCategoryMock).toHaveBeenCalledWith({
           data: {
             name: createData.name,
             amenities: {
@@ -128,7 +128,7 @@ describe('The CategoryService', () => {
     });
     describe('and at least one of the amenities does not exist', () => {
       beforeEach(() => {
-        findUniqueMock.mockImplementation(({ where }) => {
+        findUniqueCategoryMock.mockImplementation(({ where }) => {
           if (where.id === createData.amenitiesIds![0]) return {};
           if (where.id === createData.amenitiesIds![1]) return null;
         });
@@ -158,7 +158,7 @@ describe('The CategoryService', () => {
     });
     describe('and update succeeds', () => {
       beforeEach(() => {
-        updateMock.mockResolvedValue(updatedCategory);
+        updateCategoryMock.mockResolvedValue(updatedCategory);
       });
       it('should return the updated category', async () => {
         const result = await categoryService.update(
@@ -170,7 +170,7 @@ describe('The CategoryService', () => {
     });
     describe('and update category or one of amenities does not exist', () => {
       beforeEach(() => {
-        updateMock.mockImplementation(() => {
+        updateCategoryMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -188,7 +188,7 @@ describe('The CategoryService', () => {
   describe('when delete is called', () => {
     describe('and the category exists', () => {
       beforeEach(() => {
-        deleteMock.mockResolvedValue(categoriesArray[0]);
+        deleteCategoryMock.mockResolvedValue(categoriesArray[0]);
       });
       it('should return the deleted category', async () => {
         const result = await categoryService.delete(categoriesArray[0].id);
@@ -197,7 +197,7 @@ describe('The CategoryService', () => {
     });
     describe('and the category does not exist', () => {
       beforeEach(() => {
-        deleteMock.mockImplementation(() => {
+        deleteCategoryMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,

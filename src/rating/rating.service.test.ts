@@ -8,17 +8,17 @@ import { CreateRatingDto } from './dto/create-rating.dto';
 
 describe('The RatingService', () => {
   let ratingService: RatingService;
-  let findManyMock: jest.Mock;
-  let findUniqueMock: jest.Mock;
-  let createMock: jest.Mock;
-  let deleteMock: jest.Mock;
+  let findManyRaitingMock: jest.Mock;
+  let findUniqueRaitingMock: jest.Mock;
+  let createRaitingMock: jest.Mock;
+  let deleteRaitingMock: jest.Mock;
   let ratingsArray: Rating[];
 
   beforeEach(async () => {
-    findManyMock = jest.fn();
-    findUniqueMock = jest.fn();
-    createMock = jest.fn();
-    deleteMock = jest.fn();
+    findManyRaitingMock = jest.fn();
+    findUniqueRaitingMock = jest.fn();
+    createRaitingMock = jest.fn();
+    deleteRaitingMock = jest.fn();
     const module = await Test.createTestingModule({
       providers: [
         RatingService,
@@ -26,10 +26,10 @@ describe('The RatingService', () => {
           provide: PrismaService,
           useValue: {
             rating: {
-              findMany: findManyMock,
-              findUnique: findUniqueMock,
-              create: createMock,
-              delete: deleteMock,
+              findMany: findManyRaitingMock,
+              findUnique: findUniqueRaitingMock,
+              create: createRaitingMock,
+              delete: deleteRaitingMock,
             },
           },
         },
@@ -58,7 +58,7 @@ describe('The RatingService', () => {
   describe('when getAll is called', () => {
     describe('and ratings exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue(ratingsArray);
+        findManyRaitingMock.mockResolvedValue(ratingsArray);
       });
       it('should return all ratings', async () => {
         const result = await ratingService.getAll();
@@ -67,7 +67,7 @@ describe('The RatingService', () => {
     });
     describe('and no ratings exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([]);
+        findManyRaitingMock.mockResolvedValue([]);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -80,7 +80,7 @@ describe('The RatingService', () => {
   describe('when getOne is called', () => {
     describe('and rating exists', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(ratingsArray[0]);
+        findUniqueRaitingMock.mockResolvedValue(ratingsArray[0]);
       });
       it('should return the rating', async () => {
         const result = await ratingService.getOne(ratingsArray[0].id);
@@ -89,7 +89,7 @@ describe('The RatingService', () => {
     });
     describe('and rating does not exist', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(null);
+        findUniqueRaitingMock.mockResolvedValue(null);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -110,11 +110,11 @@ describe('The RatingService', () => {
     });
     describe('and reservation exists', () => {
       beforeEach(() => {
-        createMock.mockResolvedValue(ratingsArray[0]);
+        createRaitingMock.mockResolvedValue(ratingsArray[0]);
       });
       it('should call create with correct data', async () => {
         await ratingService.create(createData);
-        expect(createMock).toHaveBeenCalledWith({
+        expect(createRaitingMock).toHaveBeenCalledWith({
           data: {
             reservation: { connect: { id: createData.reservationId } },
             score: createData.score,
@@ -129,7 +129,7 @@ describe('The RatingService', () => {
     });
     describe('and reservation does not exist', () => {
       beforeEach(() => {
-        createMock.mockImplementation(() => {
+        createRaitingMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -147,7 +147,7 @@ describe('The RatingService', () => {
   describe('when getByVenue is called', () => {
     describe('and ratings for venue exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([ratingsArray[0]]);
+        findManyRaitingMock.mockResolvedValue([ratingsArray[0]]);
       });
       it('should return ratings for given venue', async () => {
         const result = await ratingService.getByVenue(1);
@@ -156,7 +156,7 @@ describe('The RatingService', () => {
     });
     describe('and no ratings found for venue', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([]);
+        findManyRaitingMock.mockResolvedValue([]);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -169,7 +169,7 @@ describe('The RatingService', () => {
   describe('when getByUser is called', () => {
     describe('and ratings for user exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([ratingsArray[1]]);
+        findManyRaitingMock.mockResolvedValue([ratingsArray[1]]);
       });
       it('should return ratings for given user', async () => {
         const result = await ratingService.getByUser(1);
@@ -178,7 +178,7 @@ describe('The RatingService', () => {
     });
     describe('and no ratings found for user', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([]);
+        findManyRaitingMock.mockResolvedValue([]);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -191,7 +191,7 @@ describe('The RatingService', () => {
   describe('when delete is called', () => {
     describe('and rating exists', () => {
       beforeEach(() => {
-        deleteMock.mockResolvedValue(ratingsArray[0]);
+        deleteRaitingMock.mockResolvedValue(ratingsArray[0]);
       });
       it('should return the deleted rating', async () => {
         const result = await ratingService.delete(ratingsArray[0].id);
@@ -200,7 +200,7 @@ describe('The RatingService', () => {
     });
     describe('and rating does not exist', () => {
       beforeEach(() => {
-        deleteMock.mockImplementation(() => {
+        deleteRaitingMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,

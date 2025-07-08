@@ -9,18 +9,18 @@ import { UpdateOccasionDto } from './dto/update-occasion.dto';
 
 describe('The OccasionService', () => {
   let occasionService: OccasionService;
-  let findManyMock: jest.Mock;
-  let findUniqueMock: jest.Mock;
-  let createMock: jest.Mock;
-  let updateMock: jest.Mock;
-  let deleteMock: jest.Mock;
+  let findOccasionManyMock: jest.Mock;
+  let findOccasionUniqueMock: jest.Mock;
+  let createOccasionMock: jest.Mock;
+  let updateOccasionMock: jest.Mock;
+  let deleteOccasionMock: jest.Mock;
   let occasionsArray: Occasion[];
   beforeEach(async () => {
-    findManyMock = jest.fn();
-    findUniqueMock = jest.fn();
-    createMock = jest.fn();
-    updateMock = jest.fn();
-    deleteMock = jest.fn();
+    findOccasionManyMock = jest.fn();
+    findOccasionUniqueMock = jest.fn();
+    createOccasionMock = jest.fn();
+    updateOccasionMock = jest.fn();
+    deleteOccasionMock = jest.fn();
     const module = await Test.createTestingModule({
       providers: [
         OccasionService,
@@ -28,11 +28,11 @@ describe('The OccasionService', () => {
           provide: PrismaService,
           useValue: {
             occasion: {
-              findMany: findManyMock,
-              findUnique: findUniqueMock,
-              create: createMock,
-              update: updateMock,
-              delete: deleteMock,
+              findMany: findOccasionManyMock,
+              findUnique: findOccasionUniqueMock,
+              create: createOccasionMock,
+              update: updateOccasionMock,
+              delete: deleteOccasionMock,
             },
           },
         },
@@ -49,7 +49,7 @@ describe('The OccasionService', () => {
   describe('when getAll is called', () => {
     describe('and occasions exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue(occasionsArray);
+        findOccasionManyMock.mockResolvedValue(occasionsArray);
       });
       it('should return all occasions', async () => {
         const result = await occasionService.getAll();
@@ -58,7 +58,7 @@ describe('The OccasionService', () => {
     });
     describe('and no occasions exist', () => {
       beforeEach(() => {
-        findManyMock.mockResolvedValue([]);
+        findOccasionManyMock.mockResolvedValue([]);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -71,7 +71,7 @@ describe('The OccasionService', () => {
   describe('when getOne is called', () => {
     describe('and occasion exists', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(occasionsArray[0]);
+        findOccasionUniqueMock.mockResolvedValue(occasionsArray[0]);
       });
       it('should return the occasion', async () => {
         const result = await occasionService.getOne(occasionsArray[0].id);
@@ -80,7 +80,7 @@ describe('The OccasionService', () => {
     });
     describe('and occasion does not exist', () => {
       beforeEach(() => {
-        findUniqueMock.mockResolvedValue(null);
+        findOccasionUniqueMock.mockResolvedValue(null);
       });
       it('should throw NotFoundException', async () => {
         return expect(async () => {
@@ -100,11 +100,11 @@ describe('The OccasionService', () => {
     });
     describe('and all amenities exist', () => {
       beforeEach(() => {
-        createMock.mockResolvedValue(occasionsArray[0]);
+        createOccasionMock.mockResolvedValue(occasionsArray[0]);
       });
       it('should call create with correct amenities', async () => {
         await occasionService.create(createData);
-        expect(createMock).toHaveBeenCalledWith({
+        expect(createOccasionMock).toHaveBeenCalledWith({
           data: {
             name: createData.name,
             amenities: {
@@ -123,7 +123,7 @@ describe('The OccasionService', () => {
     });
     describe('and some amenities do not exist', () => {
       beforeEach(() => {
-        createMock.mockImplementation(() => {
+        createOccasionMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -149,7 +149,7 @@ describe('The OccasionService', () => {
     });
     describe('and update succeeds', () => {
       beforeEach(() => {
-        updateMock.mockResolvedValue({
+        updateOccasionMock.mockResolvedValue({
           id: occasionsArray[0].id,
           name: newName,
         });
@@ -167,7 +167,7 @@ describe('The OccasionService', () => {
     });
     describe('and occasion or amenities do not exist', () => {
       beforeEach(() => {
-        updateMock.mockImplementation(() => {
+        updateOccasionMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
@@ -185,7 +185,7 @@ describe('The OccasionService', () => {
   describe('when delete is called', () => {
     describe('and occasion exists', () => {
       beforeEach(() => {
-        deleteMock.mockResolvedValue(occasionsArray[0]);
+        deleteOccasionMock.mockResolvedValue(occasionsArray[0]);
       });
       it('should return deleted occasion', async () => {
         const result = await occasionService.delete(occasionsArray[0].id);
@@ -194,7 +194,7 @@ describe('The OccasionService', () => {
     });
     describe('and occasion does not exist', () => {
       beforeEach(() => {
-        deleteMock.mockImplementation(() => {
+        deleteOccasionMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,

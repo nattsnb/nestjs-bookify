@@ -122,6 +122,44 @@ describe('The VenueService', () => {
         amenityToVenues: [{ amenity: { id: 3, name: 'Fireplace' } }],
         amenities: [{ id: 3, name: 'Fireplace' }],
       },
+      {
+        id: 3,
+        name: 'Test Venue Three',
+        description: 'Nice place by the sea',
+        images: ['https://example.com/venue1.jpg'],
+        pricePerNightInEURCent: 15000,
+        rating: 4.7,
+        capacity: 5,
+        amountsOfBeds: 3,
+        extraSleepingDetails: 'Sofa bed for one',
+        checkInHour: 15,
+        checkOutHour: 11,
+        distanceFromCityCenterInMeters: 700,
+        facebookUrl: 'https://facebook.com/venue1',
+        instagramUrl: 'https://instagram.com/venue1',
+        twitterUrl: null,
+        websiteUrl: 'https://venue1.com',
+        streetNumber: '10B',
+        streetName: 'Beach Ave',
+        postalCode: '54321',
+        city: 'Beachville',
+        ownerId: 1,
+        venueTypeId: 1,
+        owner: {
+          id: 1,
+          name: 'Owner One',
+          email: 'owner1@example.com',
+          phoneNumber: '+48123456789',
+        },
+        amenityToVenues: [
+          { amenity: { id: 1, name: 'WiFi' } },
+          { amenity: { id: 2, name: 'Pool' } },
+        ],
+        amenities: [
+          { id: 1, name: 'WiFi' },
+          { id: 2, name: 'Pool' },
+        ],
+      },
     ];
 
     createVenueData = {
@@ -756,6 +794,33 @@ describe('The VenueService', () => {
         );
         expect(result).toEqual([venuesArray[0], venuesArray[1]]);
       });
+    });
+  });
+
+  describe('when getCityNames is called', () => {
+    beforeEach(() => {
+      prismaMock.venue.findMany.mockResolvedValue(venuesArray);
+    });
+
+    it('should ask Prisma for distinct city names ordered ascending and return only unique, sorted names', async () => {
+      const cityNames = [
+        venuesArray[0].city.toLowerCase(),
+        venuesArray[1].city.toLowerCase(),
+      ];
+      const result = await venueService.getCityNames();
+
+      expect(prismaMock.venue.findMany).toHaveBeenCalledWith({
+        select: { city: true },
+        distinct: ['city'],
+        orderBy: { city: 'asc' },
+      });
+      expect(result).toEqual(cityNames);
+    });
+
+    it('should return an empty array if there are no venues', async () => {
+      prismaMock.venue.findMany.mockResolvedValue([]);
+      const result = await venueService.getCityNames();
+      expect(result).toEqual([]);
     });
   });
 });

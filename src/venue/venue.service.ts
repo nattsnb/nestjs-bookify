@@ -27,6 +27,18 @@ export class VenueService {
     });
   }
 
+  async getCityNames(): Promise<string[]> {
+    const citiesData = await this.prismaService.venue.findMany({
+      select: { city: true },
+      distinct: ['city'],
+      orderBy: { city: 'asc' },
+    });
+    const records = citiesData.map((record) => record.city.toLowerCase());
+    const names = Array.from(new Set(records));
+    names.sort();
+    return names;
+  }
+
   async create(createVenueData: CreateVenueDto, userId: number) {
     const {
       amenitiesIds,

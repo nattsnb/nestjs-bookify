@@ -26,7 +26,7 @@ Database for Booking mock-up.
 
 9. To start the database, run:
 
-`npx run start`
+`npm run start`
 
 
 ## Branches:

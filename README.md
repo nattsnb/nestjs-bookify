@@ -16,9 +16,7 @@ Database for Booking mock-up.
 
 `docker compose up`
 
-7. In directory 'nestjs-bookify/' run:
-   
-`npxm run build-prisma`
+7. ...
 
 8. Run:
 

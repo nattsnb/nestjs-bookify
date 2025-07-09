@@ -18,13 +18,13 @@ Database for Booking mock-up.
 
 7. In directory 'nestjs-bookify/' run:
    
-`npx prisma generate`
+`npxm run build-prisma`
 
 8. Run:
 
 `npx prisma migrate deploy`
 
-9. To start the database, run:
+9. To start the server, run:
 
 `npm run start`
 

@@ -1,0 +1,9 @@
+model AmenityToVenue {
+  venueId   Int
+  amenityId Int
+
+  venue   Venue   @relation(fields: [venueId], references: [id])
+  amenity Amenity @relation(fields: [amenityId], references: [id])
+
+  @@id([venueId, amenityId])
+}

@@ -89,42 +89,42 @@ export class CreateVenueDto {
     description: 'Facebook page URL',
     example: 'https://facebook.com/seasidevilla',
   })
-  @IsString()
   @IsOptional()
+  @IsString()
   facebookUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Instagram profile URL',
     example: 'https://instagram.com/seasidevilla',
   })
-  @IsString()
   @IsOptional()
+  @IsString()
   instagramUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Twitter profile URL',
     example: 'https://twitter.com/seasidevilla',
   })
-  @IsString()
   @IsOptional()
+  @IsString()
   twitterUrl?: string;
 
   @ApiPropertyOptional({
     description: 'Official website URL',
     example: 'https://seasidevilla.com',
   })
-  @IsString()
   @IsOptional()
+  @IsString()
   websiteUrl?: string;
 
-  @ApiProperty({ description: 'Street number of the venue', example: '25B' })
+  @ApiProperty({ description: 'Street number of the venue', example: '1' })
   @IsString()
   @IsNotEmpty()
   streetNumber: string;
 
   @ApiProperty({
     description: 'Street name of the venue',
-    example: 'Ocean Drive',
+    example: 'Praça do Comércio',
   })
   @IsString()
   @IsNotEmpty()
@@ -132,7 +132,7 @@ export class CreateVenueDto {
 
   @ApiProperty({
     description: 'Postal code of the venue location',
-    example: '10001',
+    example: '1100-148',
   })
   @IsString()
   @IsNotEmpty()
@@ -140,7 +140,7 @@ export class CreateVenueDto {
 
   @ApiProperty({
     description: 'City where the venue is located',
-    example: 'Lisbon',
+    example: 'Lisboa',
   })
   @IsString()
   @IsNotEmpty()
@@ -154,4 +154,12 @@ export class CreateVenueDto {
   @IsArray()
   @IsInt({ each: true })
   amenitiesIds?: number[];
+
+  @ApiProperty({
+    description: 'ID of the venue type',
+    example: 1,
+  })
+  @IsInt()
+  @IsNotEmpty()
+  venueTypeId: number;
 }

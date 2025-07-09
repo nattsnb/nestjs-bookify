@@ -16,16 +16,17 @@ Database for Booking mock-up.
 
 `docker compose up`
 
-7. ...
+7. In directory 'nestjs-bookify/' run:
 
-8. Run:
+`npm run build-prisma`
 
-`npx prisma migrate deploy`
+8. In directory 'nestjs-bookify/' run:
+
+`npm prisma migrate dev`
 
 9. To start the server, run:
 
 `npm run start`
-
 
 ## Branches:
 
@@ -44,4 +45,3 @@ Advanced functionality: filters for venue search results and endpoints for the c
 ### feat/testing
 
 Test development and final corrections.
-

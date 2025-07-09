@@ -1,5 +1,0 @@
-model Occasion {
-  id        Int       @id @default(autoincrement())
-  name      String
-  amenities Amenity[]
-}

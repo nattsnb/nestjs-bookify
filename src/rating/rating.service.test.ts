@@ -58,19 +58,15 @@ describe('The RatingService', () => {
 
   describe('when getAll is called', () => {
     describe('and ratings exist', () => {
-      beforeEach(() => {
-        findManyRaitingMock.mockResolvedValue(ratingsArray);
-      });
       it('should return all ratings', async () => {
+        findManyRaitingMock.mockResolvedValue(ratingsArray);
         const result = await ratingService.getAll();
         expect(result).toEqual(ratingsArray);
       });
     });
     describe('and no ratings exist', () => {
-      beforeEach(() => {
-        findManyRaitingMock.mockResolvedValue([]);
-      });
       it('should return an empty array', async () => {
+        findManyRaitingMock.mockResolvedValue([]);
         const result = await ratingService.getAll();
         expect(result).toEqual([]);
       });
@@ -79,22 +75,18 @@ describe('The RatingService', () => {
 
   describe('when getOne is called', () => {
     describe('and rating exists', () => {
-      beforeEach(() => {
-        findUniqueRaitingMock.mockResolvedValue(ratingsArray[0]);
-      });
       it('should return the rating', async () => {
+        findUniqueRaitingMock.mockResolvedValue(ratingsArray[0]);
         const result = await ratingService.getOne(ratingsArray[0].id);
         expect(result).toEqual(ratingsArray[0]);
       });
     });
     describe('and rating does not exist', () => {
-      beforeEach(() => {
-        findUniqueRaitingMock.mockResolvedValue(null);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await ratingService.getOne(999);
-        }).rejects.toThrow(NotFoundException);
+        findUniqueRaitingMock.mockResolvedValue(null);
+        await expect(ratingService.getOne(999)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
@@ -109,10 +101,8 @@ describe('The RatingService', () => {
       };
     });
     describe('and reservation exists', () => {
-      beforeEach(() => {
-        createRaitingMock.mockResolvedValue(ratingsArray[0]);
-      });
       it('should call create with correct data', async () => {
+        createRaitingMock.mockResolvedValue(ratingsArray[0]);
         await ratingService.create(createData);
         expect(createRaitingMock).toHaveBeenCalledWith({
           data: {
@@ -123,94 +113,81 @@ describe('The RatingService', () => {
         });
       });
       it('should return the created rating', async () => {
+        createRaitingMock.mockResolvedValue(ratingsArray[0]);
         const result = await ratingService.create(createData);
         expect(result).toEqual(ratingsArray[0]);
       });
     });
     describe('and reservation does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         createRaitingMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await ratingService.create(createData);
-        }).rejects.toThrow(NotFoundException);
+        await expect(ratingService.create(createData)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
 
   describe('when getByVenue is called', () => {
     describe('and ratings for venue exist', () => {
-      beforeEach(() => {
-        findManyRaitingMock.mockResolvedValue([ratingsArray[0]]);
-      });
       it('should return ratings for given venue', async () => {
+        findManyRaitingMock.mockResolvedValue([ratingsArray[0]]);
         const result = await ratingService.getByVenue(1);
         expect(result).toEqual([ratingsArray[0]]);
       });
     });
     describe('and no ratings found for venue', () => {
-      beforeEach(() => {
-        findManyRaitingMock.mockResolvedValue([]);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await ratingService.getByVenue(1);
-        }).rejects.toThrow(NotFoundException);
+        findManyRaitingMock.mockResolvedValue([]);
+        await expect(ratingService.getByVenue(1)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
 
   describe('when getByUser is called', () => {
     describe('and ratings for user exist', () => {
-      beforeEach(() => {
-        findManyRaitingMock.mockResolvedValue([ratingsArray[1]]);
-      });
       it('should return ratings for given user', async () => {
+        findManyRaitingMock.mockResolvedValue([ratingsArray[1]]);
         const result = await ratingService.getByUser(1);
         expect(result).toEqual([ratingsArray[1]]);
       });
     });
     describe('and no ratings found for user', () => {
-      beforeEach(() => {
-        findManyRaitingMock.mockResolvedValue([]);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await ratingService.getByUser(1);
-        }).rejects.toThrow(NotFoundException);
+        findManyRaitingMock.mockResolvedValue([]);
+        await expect(ratingService.getByUser(1)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
 
   describe('when delete is called', () => {
     describe('and rating exists', () => {
-      beforeEach(() => {
-        deleteRaitingMock.mockResolvedValue(ratingsArray[0]);
-      });
       it('should return the deleted rating', async () => {
+        deleteRaitingMock.mockResolvedValue(ratingsArray[0]);
         const result = await ratingService.delete(ratingsArray[0].id);
         expect(result).toEqual(ratingsArray[0]);
       });
     });
     describe('and rating does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         deleteRaitingMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await ratingService.delete(999);
-        }).rejects.toThrow(NotFoundException);
+        await expect(ratingService.delete(999)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });

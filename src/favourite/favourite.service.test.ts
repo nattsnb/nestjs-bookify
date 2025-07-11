@@ -44,52 +44,43 @@ describe('The FavouriteService', () => {
 
   describe('when getAll is called', () => {
     describe('and favourites exist', () => {
-      beforeEach(() => {
-        findManyFavouriteMock.mockResolvedValue(favouritesArray);
-      });
       it('should return all favourites', async () => {
+        findManyFavouriteMock.mockResolvedValue(favouritesArray);
         const result = await favouriteService.getAll();
         expect(result).toEqual(favouritesArray);
       });
     });
     describe('and no favourites exist', () => {
-      beforeEach(() => {
-        findManyFavouriteMock.mockResolvedValue([]);
-      });
       it('should return an empty array', async () => {
+        findManyFavouriteMock.mockResolvedValue([]);
         const result = await favouriteService.getAll();
         expect(result).toEqual([]);
       });
     });
   });
+
   describe('when getOne is called', () => {
     describe('and favourite exists', () => {
-      beforeEach(() => {
-        findUniqueFavouriteMock.mockResolvedValue(favouritesArray[0]);
-      });
       it('should return the favourite', async () => {
+        findUniqueFavouriteMock.mockResolvedValue(favouritesArray[0]);
         const result = await favouriteService.getOne(favouritesArray[0].id);
         expect(result).toEqual(favouritesArray[0]);
       });
     });
     describe('and favourite does not exist', () => {
-      beforeEach(() => {
-        findUniqueFavouriteMock.mockResolvedValue(null);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await favouriteService.getOne(favouritesArray[0].id);
-        }).rejects.toThrow(NotFoundException);
+        findUniqueFavouriteMock.mockResolvedValue(null);
+        await expect(
+          favouriteService.getOne(favouritesArray[0].id),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });
 
   describe('when create is called', () => {
     describe('and venue and user exist', () => {
-      beforeEach(() => {
-        createFavouriteMock.mockResolvedValue(favouritesArray[0]);
-      });
       it('should return created favourite', async () => {
+        createFavouriteMock.mockResolvedValue(favouritesArray[0]);
         const result = await favouriteService.create(
           favouritesArray[0].venueId,
           favouritesArray[0].userId,
@@ -98,28 +89,24 @@ describe('The FavouriteService', () => {
       });
     });
     describe('and venue or user does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         createFavouriteMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await favouriteService.create(999, 888);
-        }).rejects.toThrow(NotFoundException);
+        await expect(favouriteService.create(999, 888)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
 
   describe('when getByVenue is called', () => {
     describe('and favourites exist for venue', () => {
-      beforeEach(() => {
-        findManyFavouriteMock.mockResolvedValue(favouritesArray);
-      });
       it('should return favourites for venue', async () => {
+        findManyFavouriteMock.mockResolvedValue(favouritesArray);
         const result = await favouriteService.getByVenue(
           favouritesArray[0].venueId,
         );
@@ -127,23 +114,19 @@ describe('The FavouriteService', () => {
       });
     });
     describe('and no favourites exist for venue', () => {
-      beforeEach(() => {
-        findManyFavouriteMock.mockResolvedValue([]);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await favouriteService.getByVenue(999);
-        }).rejects.toThrow(NotFoundException);
+        findManyFavouriteMock.mockResolvedValue([]);
+        await expect(favouriteService.getByVenue(999)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
 
   describe('when getByUser is called', () => {
     describe('and favourites exist for user', () => {
-      beforeEach(() => {
-        findManyFavouriteMock.mockResolvedValue([favouritesArray[0]]);
-      });
       it('should return favourites for user', async () => {
+        findManyFavouriteMock.mockResolvedValue([favouritesArray[0]]);
         const result = await favouriteService.getByUser(
           favouritesArray[0].userId,
         );
@@ -151,40 +134,34 @@ describe('The FavouriteService', () => {
       });
     });
     describe('and no favourites exist for user', () => {
-      beforeEach(() => {
-        findManyFavouriteMock.mockResolvedValue([]);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await favouriteService.getByUser(999);
-        }).rejects.toThrow(NotFoundException);
+        findManyFavouriteMock.mockResolvedValue([]);
+        await expect(favouriteService.getByUser(999)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
 
   describe('when delete is called', () => {
     describe('and favourite exists', () => {
-      beforeEach(() => {
-        deleteFavouriteMock.mockResolvedValue(favouritesArray[0]);
-      });
       it('should return the deleted favourite', async () => {
+        deleteFavouriteMock.mockResolvedValue(favouritesArray[0]);
         const result = await favouriteService.delete(favouritesArray[0].id);
         expect(result).toEqual(favouritesArray[0]);
       });
     });
     describe('and favourite does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         deleteFavouriteMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await favouriteService.delete(999);
-        }).rejects.toThrow(NotFoundException);
+        await expect(favouriteService.delete(999)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });

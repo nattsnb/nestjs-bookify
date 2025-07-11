@@ -44,122 +44,77 @@ describe('The VenueTypeService', () => {
   });
 
   describe('when getAll is called', () => {
-    describe('and venue types exist', () => {
-      beforeEach(() => {
-        getAllVenueTypesMock.mockResolvedValue(venueTypesArray);
-      });
-
-      it('should return all venue types', async () => {
-        const result = await venueTypeService.getAll();
-        expect(result).toEqual(venueTypesArray);
-      });
+    it('should return all venue types', async () => {
+      getAllVenueTypesMock.mockResolvedValue(venueTypesArray);
+      const result = await venueTypeService.getAll();
+      expect(result).toEqual(venueTypesArray);
     });
 
-    describe('and no venue types exist', () => {
-      beforeEach(() => {
-        getAllVenueTypesMock.mockResolvedValue([]);
-      });
-
-      it('should return an empty array', async () => {
-        const result = await venueTypeService.getAll();
-        expect(result).toEqual([]);
-      });
+    it('should return an empty array', async () => {
+      getAllVenueTypesMock.mockResolvedValue([]);
+      const result = await venueTypeService.getAll();
+      expect(result).toEqual([]);
     });
   });
 
   describe('when getOne is called', () => {
-    describe('and venue type exists', () => {
-      beforeEach(() => {
-        getOneVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
-      });
-
-      it('should return the venue type', async () => {
-        const result = await venueTypeService.getOne(1);
-        expect(result).toEqual(venueTypesArray[0]);
-      });
+    it('should return the venue type', async () => {
+      getOneVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
+      const result = await venueTypeService.getOne(1);
+      expect(result).toEqual(venueTypesArray[0]);
     });
 
-    describe('and venue type does not exist', () => {
-      beforeEach(() => {
-        getOneVenueTypeMock.mockResolvedValue(null);
-      });
-
-      it('should throw NotFoundException', async () => {
-        await expect(venueTypeService.getOne(999)).rejects.toThrow(
-          NotFoundException,
-        );
-      });
+    it('should throw NotFoundException if not found', async () => {
+      getOneVenueTypeMock.mockResolvedValue(null);
+      await expect(venueTypeService.getOne(999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
   describe('when create is called', () => {
-    describe('and creation succeeds', () => {
-      beforeEach(() => {
-        createVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
-      });
-
-      it('should return the created venue type', async () => {
-        const result = await venueTypeService.create({ name: 'Apartment' });
-        expect(result).toEqual(venueTypesArray[0]);
-      });
+    it('should return the created venue type', async () => {
+      createVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
+      const result = await venueTypeService.create({ name: 'Apartment' });
+      expect(result).toEqual(venueTypesArray[0]);
     });
 
-    describe('and creation fails', () => {
-      beforeEach(() => {
-        createVenueTypeMock.mockImplementation(() => {
-          throw new Error('Unexpected error');
-        });
+    it('should throw the error if creation fails', async () => {
+      createVenueTypeMock.mockImplementation(() => {
+        throw new Error('Unexpected error');
       });
-
-      it('should throw the error', async () => {
-        await expect(
-          venueTypeService.create({ name: 'Apartment' }),
-        ).rejects.toThrow('Unexpected error');
-      });
+      await expect(
+        venueTypeService.create({ name: 'Apartment' }),
+      ).rejects.toThrow('Unexpected error');
     });
   });
 
   describe('when delete is called', () => {
-    describe('and venue type exists', () => {
-      beforeEach(() => {
-        deleteVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
-      });
-
-      it('should delete the venue type and return it', async () => {
-        const result = await venueTypeService.delete(1);
-        expect(result).toEqual(venueTypesArray[0]);
-      });
+    it('should delete the venue type and return it', async () => {
+      deleteVenueTypeMock.mockResolvedValue(venueTypesArray[0]);
+      const result = await venueTypeService.delete(1);
+      expect(result).toEqual(venueTypesArray[0]);
     });
 
-    describe('and venue type does not exist', () => {
-      beforeEach(() => {
-        deleteVenueTypeMock.mockImplementation(() => {
-          throw new Prisma.PrismaClientKnownRequestError('Not found', {
-            code: PrismaError.RecordDoesNotExist,
-            clientVersion: '4.0.0',
-          });
+    it('should throw NotFoundException if not found', async () => {
+      deleteVenueTypeMock.mockImplementation(() => {
+        throw new Prisma.PrismaClientKnownRequestError('Not found', {
+          code: PrismaError.RecordDoesNotExist,
+          clientVersion: '4.0.0',
         });
       });
-
-      it('should throw NotFoundException', async () => {
-        await expect(venueTypeService.delete(999)).rejects.toThrow(
-          NotFoundException,
-        );
-      });
+      await expect(venueTypeService.delete(999)).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
-    describe('and other error occurs during deletion', () => {
-      beforeEach(() => {
-        deleteVenueTypeMock.mockImplementation(() => {
-          throw new Error('Unexpected error');
-        });
+    it('should throw the error if unexpected error occurs', async () => {
+      deleteVenueTypeMock.mockImplementation(() => {
+        throw new Error('Unexpected error');
       });
-
-      it('should throw the error', async () => {
-        await expect(venueTypeService.delete(1)).rejects.toThrow(
-          'Unexpected error',
-        );
-      });
+      await expect(venueTypeService.delete(1)).rejects.toThrow(
+        'Unexpected error',
+      );
     });
   });
 });

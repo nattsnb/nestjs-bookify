@@ -63,20 +63,16 @@ describe('The ReservationService', () => {
 
   describe('when getAll is called', () => {
     describe('and reservations exist', () => {
-      beforeEach(() => {
-        findManyReservationMock.mockResolvedValue(reservationsArray);
-      });
       it('should return all reservations', async () => {
+        findManyReservationMock.mockResolvedValue(reservationsArray);
         const result = await reservationService.getAll();
         expect(result).toEqual(reservationsArray);
       });
     });
 
     describe('and no reservations exist', () => {
-      beforeEach(() => {
-        findManyReservationMock.mockResolvedValue([]);
-      });
       it('should return an empty array', async () => {
+        findManyReservationMock.mockResolvedValue([]);
         const result = await reservationService.getAll();
         expect(result).toEqual([]);
       });
@@ -159,11 +155,9 @@ describe('The ReservationService', () => {
       };
     });
     describe('and venue is available', () => {
-      beforeEach(() => {
+      it('should create the reservation', async () => {
         findManyReservationMock.mockResolvedValue([]);
         createReservationMock.mockResolvedValue(reservationsArray[0]);
-      });
-      it('should create the reservation', async () => {
         const result = await reservationService.create(
           createReservationData,
           reservationsArray[0].userId,
@@ -172,10 +166,8 @@ describe('The ReservationService', () => {
       });
     });
     describe('and dates are already taken', () => {
-      beforeEach(() => {
-        findManyReservationMock.mockResolvedValue([reservationsArray[0]]);
-      });
       it('should throw ConflictException', async () => {
+        findManyReservationMock.mockResolvedValue([reservationsArray[0]]);
         await expect(
           reservationService.create(
             createReservationData,
@@ -185,7 +177,7 @@ describe('The ReservationService', () => {
       });
     });
     describe('and venue or user not found', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         findManyReservationMock.mockResolvedValue([]);
         createReservationMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('fail', {
@@ -193,8 +185,6 @@ describe('The ReservationService', () => {
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
         await expect(
           reservationService.create(
             createReservationData,
@@ -207,24 +197,20 @@ describe('The ReservationService', () => {
 
   describe('when delete is called', () => {
     describe('and reservation exists', () => {
-      beforeEach(() => {
-        deleteReservationMock.mockResolvedValue(reservationsArray[0]);
-      });
       it('should return the deleted reservation', async () => {
+        deleteReservationMock.mockResolvedValue(reservationsArray[0]);
         const result = await reservationService.delete(reservationsArray[0].id);
         expect(result).toEqual(reservationsArray[0]);
       });
     });
     describe('and reservation does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         deleteReservationMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('fail', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
         await expect(
           reservationService.delete(reservationsArray[0].id),
         ).rejects.toThrow(NotFoundException);

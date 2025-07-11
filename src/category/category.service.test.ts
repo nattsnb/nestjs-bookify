@@ -53,19 +53,15 @@ describe('The CategoryService', () => {
 
   describe('when getAll is called', () => {
     describe('and categories exist', () => {
-      beforeEach(() => {
-        findManyCategoryMock.mockResolvedValue(categoriesArray);
-      });
       it('should return the categories', async () => {
+        findManyCategoryMock.mockResolvedValue(categoriesArray);
         const result = await categoryService.getAll();
         expect(result).toEqual(categoriesArray);
       });
     });
     describe('and no categories exist', () => {
-      beforeEach(() => {
-        findManyCategoryMock.mockResolvedValue([]);
-      });
       it('should return an empty array', async () => {
+        findManyCategoryMock.mockResolvedValue([]);
         const result = await categoryService.getAll();
         expect(result).toEqual([]);
       });
@@ -74,22 +70,18 @@ describe('The CategoryService', () => {
 
   describe('when getOne is called', () => {
     describe('and the category exists', () => {
-      beforeEach(() => {
-        findUniqueCategoryMock.mockResolvedValue(categoriesArray[0]);
-      });
       it('should return the category', async () => {
+        findUniqueCategoryMock.mockResolvedValue(categoriesArray[0]);
         const result = await categoryService.getOne(categoriesArray[0].id);
         expect(result).toEqual(categoriesArray[0]);
       });
     });
     describe('and the category does not exist', () => {
-      beforeEach(() => {
-        findUniqueCategoryMock.mockResolvedValue(null);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await categoryService.getOne(categoriesArray[0].id);
-        }).rejects.toThrow(NotFoundException);
+        findUniqueCategoryMock.mockResolvedValue(null);
+        await expect(
+          categoryService.getOne(categoriesArray[0].id),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });
@@ -103,11 +95,9 @@ describe('The CategoryService', () => {
       };
     });
     describe('and all amenities exist', () => {
-      beforeEach(() => {
+      it('should call create with correct amenities connect values', async () => {
         findUniqueCategoryMock.mockResolvedValue({});
         createCategoryMock.mockResolvedValue(categoriesArray[0]);
-      });
-      it('should call create with correct amenities connect values', async () => {
         await categoryService.create(createData);
         expect(createCategoryMock).toHaveBeenCalledWith({
           data: {
@@ -122,21 +112,19 @@ describe('The CategoryService', () => {
         });
       });
       it('should create and return category', async () => {
+        findUniqueCategoryMock.mockResolvedValue({});
+        createCategoryMock.mockResolvedValue(categoriesArray[0]);
         const result = await categoryService.create(createData);
         expect(result).toEqual(categoriesArray[0]);
       });
     });
     describe('and at least one of the amenities does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException with specific message', async () => {
         findUniqueCategoryMock.mockImplementation(({ where }) => {
           if (where.id === createData.amenitiesIds![0]) return {};
           if (where.id === createData.amenitiesIds![1]) return null;
         });
-      });
-      it('should throw NotFoundException with specific message', async () => {
-        return expect(async () => {
-          await categoryService.create(createData);
-        }).rejects.toThrow(
+        await expect(categoryService.create(createData)).rejects.toThrow(
           `Invalid amenity IDs: ${createData.amenitiesIds![1]}`,
         );
       });
@@ -157,10 +145,8 @@ describe('The CategoryService', () => {
       };
     });
     describe('and update succeeds', () => {
-      beforeEach(() => {
-        updateCategoryMock.mockResolvedValue(updatedCategory);
-      });
       it('should return the updated category', async () => {
+        updateCategoryMock.mockResolvedValue(updatedCategory);
         const result = await categoryService.update(
           categoriesArray[0].id,
           updateData,
@@ -169,45 +155,39 @@ describe('The CategoryService', () => {
       });
     });
     describe('and update category or one of amenities does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         updateCategoryMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await categoryService.update(categoriesArray[1].id, updateData);
-        }).rejects.toThrow(NotFoundException);
+        await expect(
+          categoryService.update(categoriesArray[1].id, updateData),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });
 
   describe('when delete is called', () => {
     describe('and the category exists', () => {
-      beforeEach(() => {
-        deleteCategoryMock.mockResolvedValue(categoriesArray[0]);
-      });
       it('should return the deleted category', async () => {
+        deleteCategoryMock.mockResolvedValue(categoriesArray[0]);
         const result = await categoryService.delete(categoriesArray[0].id);
         expect(result).toEqual(categoriesArray[0]);
       });
     });
     describe('and the category does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         deleteCategoryMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await categoryService.delete(categoriesArray[0].id);
-        }).rejects.toThrow(NotFoundException);
+        await expect(
+          categoryService.delete(categoriesArray[0].id),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });

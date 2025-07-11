@@ -52,19 +52,15 @@ describe('The AmenityService', () => {
 
   describe('when the getAll function is called', () => {
     describe('and amenities exist', () => {
-      beforeEach(() => {
-        findManyAmenityMock.mockResolvedValue(amenitiesArray);
-      });
       it('should return the list of amenities', async () => {
+        findManyAmenityMock.mockResolvedValue(amenitiesArray);
         const result = await amenityService.getAll();
         expect(result).toEqual(amenitiesArray);
       });
     });
     describe('and no amenities exist', () => {
-      beforeEach(() => {
-        findManyAmenityMock.mockResolvedValue([]);
-      });
       it('should return an empty array', async () => {
+        findManyAmenityMock.mockResolvedValue([]);
         const result = await amenityService.getAll();
         expect(result).toEqual([]);
       });
@@ -73,22 +69,18 @@ describe('The AmenityService', () => {
 
   describe('when the getOne function is called', () => {
     describe('and amenity with given ID exists', () => {
-      beforeEach(() => {
-        findUniqueAmenityMock.mockResolvedValue(amenitiesArray[0]);
-      });
       it('should return the amenity', async () => {
+        findUniqueAmenityMock.mockResolvedValue(amenitiesArray[0]);
         const result = await amenityService.getOne(amenitiesArray[0].id);
         expect(result).toBe(amenitiesArray[0]);
       });
     });
     describe('and amenity with given ID does not exist', () => {
-      beforeEach(() => {
-        findUniqueAmenityMock.mockResolvedValue(null);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await amenityService.getOne(amenitiesArray[0].id);
-        }).rejects.toThrow(NotFoundException);
+        findUniqueAmenityMock.mockResolvedValue(null);
+        await expect(
+          amenityService.getOne(amenitiesArray[0].id),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });
@@ -102,27 +94,23 @@ describe('The AmenityService', () => {
       };
     });
     describe('and the create method returns the amenity', () => {
-      beforeEach(() => {
-        createAmenityMock.mockResolvedValue(amenitiesArray[0]);
-      });
       it('should return the created amenity', async () => {
+        createAmenityMock.mockResolvedValue(amenitiesArray[0]);
         const result = await amenityService.create(createData);
         expect(result).toEqual(amenitiesArray[0]);
       });
     });
     describe('and the category does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         createAmenityMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await amenityService.create(createData);
-        }).rejects.toThrow(NotFoundException);
+        await expect(amenityService.create(createData)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
@@ -136,16 +124,13 @@ describe('The AmenityService', () => {
       };
     });
     describe('and amenity with given id exists', () => {
-      let updateResult: Amenity;
-      beforeEach(() => {
-        updateResult = {
+      it('should return the updated amenity', async () => {
+        const updateResult: Amenity = {
           id: amenitiesArray[0].id,
           name: newName,
           categoryId: amenitiesArray[0].categoryId,
         };
         updateAmenityMock.mockResolvedValue(updateResult);
-      });
-      it('should return the updated amenity', async () => {
         const result = await amenityService.update(
           amenitiesArray[0].id,
           updateData,
@@ -155,46 +140,40 @@ describe('The AmenityService', () => {
     });
 
     describe('and amenity or category does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         updateAmenityMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await amenityService.update(amenitiesArray[0].id, updateData);
-        }).rejects.toThrow(NotFoundException);
+        await expect(
+          amenityService.update(amenitiesArray[0].id, updateData),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });
 
   describe('when the delete function is called', () => {
     describe('and amenity exists', () => {
-      beforeEach(() => {
-        deleteAmenityMock.mockResolvedValue(amenitiesArray[0]);
-      });
       it('should return the deleted amenity', async () => {
+        deleteAmenityMock.mockResolvedValue(amenitiesArray[0]);
         const result = await amenityService.delete(amenitiesArray[0].id);
         expect(result).toBe(amenitiesArray[0]);
       });
     });
 
     describe('and amenity does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         deleteAmenityMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await amenityService.delete(amenitiesArray[0].id);
-        }).rejects.toThrow(NotFoundException);
+        await expect(
+          amenityService.delete(amenitiesArray[0].id),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });

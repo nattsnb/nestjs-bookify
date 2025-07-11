@@ -15,6 +15,7 @@ describe('The OccasionService', () => {
   let updateOccasionMock: jest.Mock;
   let deleteOccasionMock: jest.Mock;
   let occasionsArray: Occasion[];
+
   beforeEach(async () => {
     jest.clearAllMocks();
     findOccasionManyMock = jest.fn();
@@ -49,19 +50,15 @@ describe('The OccasionService', () => {
 
   describe('when getAll is called', () => {
     describe('and occasions exist', () => {
-      beforeEach(() => {
-        findOccasionManyMock.mockResolvedValue(occasionsArray);
-      });
       it('should return all occasions', async () => {
+        findOccasionManyMock.mockResolvedValue(occasionsArray);
         const result = await occasionService.getAll();
         expect(result).toEqual(occasionsArray);
       });
     });
     describe('and no occasions exist', () => {
-      beforeEach(() => {
-        findOccasionManyMock.mockResolvedValue([]);
-      });
       it('should return an empty array', async () => {
+        findOccasionManyMock.mockResolvedValue([]);
         const result = await occasionService.getAll();
         expect(result).toEqual([]);
       });
@@ -70,22 +67,18 @@ describe('The OccasionService', () => {
 
   describe('when getOne is called', () => {
     describe('and occasion exists', () => {
-      beforeEach(() => {
-        findOccasionUniqueMock.mockResolvedValue(occasionsArray[0]);
-      });
       it('should return the occasion', async () => {
+        findOccasionUniqueMock.mockResolvedValue(occasionsArray[0]);
         const result = await occasionService.getOne(occasionsArray[0].id);
         expect(result).toEqual(occasionsArray[0]);
       });
     });
     describe('and occasion does not exist', () => {
-      beforeEach(() => {
-        findOccasionUniqueMock.mockResolvedValue(null);
-      });
       it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await occasionService.getOne(occasionsArray[0].id);
-        }).rejects.toThrow(NotFoundException);
+        findOccasionUniqueMock.mockResolvedValue(null);
+        await expect(
+          occasionService.getOne(occasionsArray[0].id),
+        ).rejects.toThrow(NotFoundException);
       });
     });
   });
@@ -99,10 +92,8 @@ describe('The OccasionService', () => {
       };
     });
     describe('and all amenities exist', () => {
-      beforeEach(() => {
-        createOccasionMock.mockResolvedValue(occasionsArray[0]);
-      });
       it('should call create with correct amenities', async () => {
+        createOccasionMock.mockResolvedValue(occasionsArray[0]);
         await occasionService.create(createData);
         expect(createOccasionMock).toHaveBeenCalledWith({
           data: {
@@ -117,23 +108,22 @@ describe('The OccasionService', () => {
         });
       });
       it('should return created occasion', async () => {
+        createOccasionMock.mockResolvedValue(occasionsArray[0]);
         const result = await occasionService.create(createData);
         expect(result).toEqual(occasionsArray[0]);
       });
     });
     describe('and some amenities do not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         createOccasionMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await occasionService.create(createData);
-        }).rejects.toThrow(NotFoundException);
+        await expect(occasionService.create(createData)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
@@ -148,13 +138,11 @@ describe('The OccasionService', () => {
       };
     });
     describe('and update succeeds', () => {
-      beforeEach(() => {
+      it('should return updated occasion', async () => {
         updateOccasionMock.mockResolvedValue({
           id: occasionsArray[0].id,
           name: newName,
         });
-      });
-      it('should return updated occasion', async () => {
         const result = await occasionService.update(
           occasionsArray[0].id,
           updateData,
@@ -166,45 +154,39 @@ describe('The OccasionService', () => {
       });
     });
     describe('and occasion or amenities do not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         updateOccasionMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await occasionService.update(99, updateData);
-        }).rejects.toThrow(NotFoundException);
+        await expect(occasionService.update(99, updateData)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });
 
   describe('when delete is called', () => {
     describe('and occasion exists', () => {
-      beforeEach(() => {
-        deleteOccasionMock.mockResolvedValue(occasionsArray[0]);
-      });
       it('should return deleted occasion', async () => {
+        deleteOccasionMock.mockResolvedValue(occasionsArray[0]);
         const result = await occasionService.delete(occasionsArray[0].id);
         expect(result).toEqual(occasionsArray[0]);
       });
     });
     describe('and occasion does not exist', () => {
-      beforeEach(() => {
+      it('should throw NotFoundException', async () => {
         deleteOccasionMock.mockImplementation(() => {
           throw new Prisma.PrismaClientKnownRequestError('Not found', {
             code: PrismaError.RecordDoesNotExist,
             clientVersion: Prisma.prismaVersion.client,
           });
         });
-      });
-      it('should throw NotFoundException', async () => {
-        return expect(async () => {
-          await occasionService.delete(999);
-        }).rejects.toThrow(NotFoundException);
+        await expect(occasionService.delete(999)).rejects.toThrow(
+          NotFoundException,
+        );
       });
     });
   });

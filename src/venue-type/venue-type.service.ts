@@ -8,12 +8,8 @@ import { PrismaError } from '../database/prisma-error.enum';
 export class VenueTypeService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAll() {
-    const types = await this.prismaService.venueType.findMany();
-    if (!types.length) {
-      throw new NotFoundException('No venue types found');
-    }
-    return types;
+  getAll() {
+    return this.prismaService.venueType.findMany();
   }
 
   async create(createVenueTypeData: CreateVenueTypeDto) {

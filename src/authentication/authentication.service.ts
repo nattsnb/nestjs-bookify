@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from '../user/user.service';
 import * as bcrypt from 'bcrypt';
@@ -9,6 +13,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { Response } from 'express';
 import { RequestWithUser } from './request-with-user';
+import { Prisma } from '@prisma/client';
+import { PrismaError } from '../database/prisma-error.enum';
 
 @Injectable()
 export class AuthenticationService {
@@ -19,13 +25,23 @@ export class AuthenticationService {
   ) {}
 
   async signUp(signUpData: SignUpDto) {
-    const hashedPassword = await bcrypt.hash(signUpData.password, 10);
-    return this.usersService.create({
-      name: signUpData.name,
-      email: signUpData.email,
-      password: hashedPassword,
-      phoneNumber: signUpData.phoneNumber,
-    });
+    try {
+      const hashedPassword = await bcrypt.hash(signUpData.password, 10);
+      return await this.usersService.create({
+        name: signUpData.name,
+        email: signUpData.email,
+        password: hashedPassword,
+        phoneNumber: signUpData.phoneNumber,
+      });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === PrismaError.UniqueConstraintViolated
+      ) {
+        throw new ConflictException('Email already exists');
+      }
+      throw error;
+    }
   }
 
   async logIn(logInData: LogInDto, response: Response) {
@@ -44,7 +60,7 @@ export class AuthenticationService {
     return request.user;
   }
 
-  private async getAuthenticatedUser(logInData: LogInDto) {
+  async getAuthenticatedUser(logInData: LogInDto) {
     const user = await this.getUserByEmail(logInData.email);
     const isPasswordVerified = await this.verifyPassword(
       logInData.password,
@@ -56,7 +72,7 @@ export class AuthenticationService {
     return user;
   }
 
-  private async getUserByEmail(email: string) {
+  async getUserByEmail(email: string) {
     try {
       return await this.usersService.getByEmail(email);
     } catch (error) {
@@ -67,14 +83,11 @@ export class AuthenticationService {
     }
   }
 
-  private async verifyPassword(
-    plainTextPassword: string,
-    hashedPassword: string,
-  ) {
+  async verifyPassword(plainTextPassword: string, hashedPassword: string) {
     return await bcrypt.compare(plainTextPassword, hashedPassword);
   }
 
-  private getCookieWithJwtToken(userId: number) {
+  getCookieWithJwtToken(userId: number) {
     const payload: TokenPayload = { userId };
     const token = this.jwtService.sign(payload);
     return `Authentication=${token}; HttpOnly; Path=/; Max-Age=${this.configService.get(
@@ -82,7 +95,7 @@ export class AuthenticationService {
     )}`;
   }
 
-  private getCookieForLogOut() {
+  getCookieForLogOut() {
     return `Authentication=; HttpOnly; Path=/; Max-Age=0`;
   }
 }

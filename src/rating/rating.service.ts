@@ -8,12 +8,8 @@ import { PrismaError } from '../database/prisma-error.enum';
 export class RatingService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAll() {
-    const ratings = await this.prismaService.rating.findMany();
-    if (!ratings.length) {
-      throw new NotFoundException('No ratings found');
-    }
-    return ratings;
+  getAll() {
+    return this.prismaService.rating.findMany();
   }
 
   async create(createRatingData: CreateRatingDto) {

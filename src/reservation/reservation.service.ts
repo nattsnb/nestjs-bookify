@@ -13,12 +13,8 @@ import * as dayjs from 'dayjs';
 export class ReservationService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAll() {
-    const reservations = await this.prismaService.reservation.findMany();
-    if (!reservations.length) {
-      throw new NotFoundException('No reservations found');
-    }
-    return reservations;
+  getAll() {
+    return this.prismaService.reservation.findMany();
   }
 
   async create(createReservationData: CreateReservationDto, userId: number) {

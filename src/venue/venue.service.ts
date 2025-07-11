@@ -18,25 +18,25 @@ export class VenueService {
     private readonly httpService: HttpService,
   ) {}
 
-  async getAll() {
-    try {
-      const venues = await this.prismaService.venue.findMany({
-        include: {
-          owner: true,
-          amenityToVenues: { include: { amenity: true } },
-        },
-      });
+  getAll() {
+    return this.prismaService.venue.findMany({
+      include: {
+        owner: true,
+        amenityToVenues: { include: { amenity: true } },
+      },
+    });
+  }
 
-      if (!venues.length) {
-        throw new NotFoundException('No venues found');
-      }
-
-      return venues.map((venue) => ({
-        ...venue,
-      }));
-    } catch (error) {
-      throw error;
-    }
+  async getCityNames(): Promise<string[]> {
+    const citiesData = await this.prismaService.venue.findMany({
+      select: { city: true },
+      distinct: ['city'],
+      orderBy: { city: 'asc' },
+    });
+    const records = citiesData.map((record) => record.city.toLowerCase());
+    const names = Array.from(new Set(records));
+    names.sort();
+    return names;
   }
 
   async create(createVenueData: CreateVenueDto, userId: number) {
@@ -337,6 +337,10 @@ export class VenueService {
         },
       });
 
+      if (!venues.length) {
+        throw new NotFoundException('No venues match filters');
+      }
+
       return venues;
     } catch (error) {
       throw error;
@@ -377,7 +381,6 @@ export class VenueService {
     const url = `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`;
 
     try {
-
       const response = await this.httpService.axiosRef.get<NominatimResult>(
         url,
         {

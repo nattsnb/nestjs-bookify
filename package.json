@@ -1,4 +1,7 @@
 {
+  "engines": {
+    "node": "22.x"
+  },
   "name": "nestjs-bookify",
   "version": "0.0.1",
   "description": "",

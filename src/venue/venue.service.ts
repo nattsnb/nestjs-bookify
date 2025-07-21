@@ -111,6 +111,7 @@ export class VenueService {
         include: {
           owner: true,
           amenityToVenues: { include: { amenity: true } },
+          reservations: { include: { rating: true } },
         },
       });
 

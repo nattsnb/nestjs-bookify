@@ -89,6 +89,7 @@ describe('The VenueService', () => {
           { id: 1, name: 'WiFi' },
           { id: 2, name: 'Pool' },
         ],
+        reservations: [],
       },
       {
         id: 2,
@@ -121,6 +122,7 @@ describe('The VenueService', () => {
         },
         amenityToVenues: [{ amenity: { id: 3, name: 'Fireplace' } }],
         amenities: [{ id: 3, name: 'Fireplace' }],
+        reservations: [],
       },
     ];
 

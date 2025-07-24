@@ -3,29 +3,33 @@ import { PrismaService } from '../database/prisma.service';
 import { CreateRatingDto } from './dto/create-rating.dto';
 import { Prisma } from '@prisma/client';
 import { PrismaError } from '../database/prisma-error.enum';
+import { ReservationService } from '../reservation/reservation.service';
 
 @Injectable()
 export class RatingService {
-  constructor(private readonly prismaService: PrismaService) {}
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly reservationService: ReservationService,
+  ) {}
 
-  async getAll() {
-    const ratings = await this.prismaService.rating.findMany();
-    if (!ratings.length) {
-      throw new NotFoundException('No ratings found');
-    }
-    return ratings;
+  getAll() {
+    return this.prismaService.rating.findMany();
   }
 
   async create(createRatingData: CreateRatingDto) {
     const { reservationId, ...venueRatingUserData } = createRatingData;
 
     try {
-      return await this.prismaService.rating.create({
+      const createResponse = await this.prismaService.rating.create({
         data: {
           reservation: { connect: { id: reservationId } },
           ...venueRatingUserData,
         },
       });
+      if (reservationId && createResponse) {
+        await this.reservationService.changeIsPendingRating(reservationId);
+      }
+      return createResponse;
     } catch (error) {
       if (
         error instanceof Prisma.PrismaClientKnownRequestError &&

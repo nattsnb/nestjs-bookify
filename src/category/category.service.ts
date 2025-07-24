@@ -9,16 +9,8 @@ import { PrismaError } from '../database/prisma-error.enum';
 export class CategoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAll() {
-    const categories = await this.prismaService.category.findMany({
-      include: {
-        amenities: true,
-      },
-    });
-    if (!categories.length) {
-      throw new NotFoundException('No categories found');
-    }
-    return categories;
+  getAll() {
+    return this.prismaService.category.findMany();
   }
 
   async create(createCategoryData: CreateCategoryDto) {

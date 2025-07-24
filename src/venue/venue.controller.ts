@@ -32,6 +32,11 @@ export class VenueController {
     return this.venueService.getAll();
   }
 
+  @Get('cities')
+  getCityNames() {
+    return this.venueService.getCityNames();
+  }
+
   @Get('filter')
   findWithFilters(@Query() filterDto: VenueFilterDto) {
     return this.venueService.findWithFilters(filterDto);

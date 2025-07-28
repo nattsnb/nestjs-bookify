@@ -142,6 +142,7 @@ describe('The CategoryService', () => {
       updatedCategory = {
         id: categoriesArray[0].id,
         name: newName,
+        amenities: [],
       };
     });
     describe('and update succeeds', () => {

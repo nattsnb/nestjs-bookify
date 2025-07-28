@@ -10,7 +10,9 @@ export class CategoryService {
   constructor(private readonly prismaService: PrismaService) {}
 
   getAll() {
-    return this.prismaService.category.findMany();
+    return this.prismaService.category.findMany({
+      include: { amenities: true },
+    });
   }
 
   async create(createCategoryData: CreateCategoryDto) {

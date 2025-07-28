@@ -66,9 +66,9 @@ describe('The AuthenticationService', () => {
     userData = {
       id: 1,
       email: 'jane.doe@example.com',
-      name: 'Jane Doe',
       password: hashedPassword,
-      phoneNumber: '123456789',
+      name: null,
+      phoneNumber: null,
     };
 
     response = {
@@ -81,10 +81,8 @@ describe('The AuthenticationService', () => {
 
     beforeEach(() => {
       signUpData = {
-        name: userData.name,
         email: userData.email,
         password: password,
-        phoneNumber: userData.phoneNumber,
       };
     });
 

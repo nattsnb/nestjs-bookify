@@ -12,14 +12,6 @@ export class SignUpDto {
   email: string;
 
   @ApiProperty({
-    description: 'Full name of the user',
-    example: 'Jane Doe',
-  })
-  @IsString()
-  @IsNotEmpty()
-  name: string;
-
-  @ApiProperty({
     description: 'Password (at least 8 characters)',
     example: 'securePassword123',
   })
@@ -27,12 +19,4 @@ export class SignUpDto {
   @MinLength(8)
   @IsNotEmpty()
   password: string;
-
-  @ApiProperty({
-    description: 'Phone number in international format',
-    example: '+48123456789',
-  })
-  @IsString()
-  @IsNotEmpty()
-  phoneNumber: string;
 }

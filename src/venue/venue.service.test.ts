@@ -652,7 +652,7 @@ describe('The VenueService', () => {
     });
 
     describe('and no venue matches filters', () => {
-      it('should throw NotFoundException', async () => {
+      it('should return empty array', async () => {
         prismaMock.venue.findMany.mockResolvedValue([]);
         const filters = {
           amenities: [999],
@@ -667,9 +667,8 @@ describe('The VenueService', () => {
           longitude: 0,
           radiusKm: 1,
         };
-        await expect(venueService.findWithFilters(filters)).rejects.toThrow(
-          NotFoundException,
-        );
+        const result = await venueService.findWithFilters(filters);
+        expect(result).toEqual([]);
       });
     });
 

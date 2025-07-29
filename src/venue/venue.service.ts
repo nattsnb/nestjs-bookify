@@ -328,7 +328,7 @@ export class VenueService {
         };
       }
 
-      const venues = await this.prismaService.venue.findMany({
+      return await this.prismaService.venue.findMany({
         where,
         include: {
           amenityToVenues: { include: { amenity: true } },
@@ -337,12 +337,6 @@ export class VenueService {
           venueType: true,
         },
       });
-
-      if (!venues.length) {
-        throw new NotFoundException('No venues match filters');
-      }
-
-      return venues;
     } catch (error) {
       throw error;
     }

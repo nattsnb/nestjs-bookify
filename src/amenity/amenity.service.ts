@@ -9,12 +9,8 @@ import { PrismaError } from '../database/prisma-error.enum';
 export class AmenityService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAll() {
-    const amenities = await this.prismaService.amenity.findMany();
-    if (!amenities.length) {
-      throw new NotFoundException('No amenities found');
-    }
-    return amenities;
+  getAll() {
+    return this.prismaService.amenity.findMany();
   }
 
   async create(createAmenityData: CreateAmenityDto) {

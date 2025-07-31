@@ -1,31 +1,22 @@
-import { IsInt, IsNotEmpty, IsDate } from 'class-validator';
+import { IsInt, IsNotEmpty, IsDateString } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
-import { Type } from 'class-transformer';
 
 export class CreateReservationDto {
-  @ApiProperty({
-    description: 'ID of the venue being reserved',
-    example: 5,
-  })
+  @ApiProperty({ description: 'ID of the venue being reserved', example: 5 })
   @IsInt()
   @IsNotEmpty()
   venueId: number;
 
   @ApiProperty({
-    description: 'Start date of the reservation (ISO format with time)',
-    example: '2025-08-01T14:00:00.000Z',
+    description: 'Start date (YYYY-MM-DD)',
+    example: '2025-08-01',
   })
-  @IsDate()
-  @Type(() => Date)
+  @IsDateString({ strict: true }, { message: 'Must be in YYYY-MM-DD format' })
   @IsNotEmpty()
-  dateStart: Date;
+  dateStart: string;
 
-  @ApiProperty({
-    description: 'End date of the reservation (ISO format with time)',
-    example: '2025-08-05T10:00:00.000Z',
-  })
-  @IsDate()
-  @Type(() => Date)
+  @ApiProperty({ description: 'End date (YYYY-MM-DD)', example: '2025-08-05' })
+  @IsDateString({ strict: true }, { message: 'Must be in YYYY-MM-DD format' })
   @IsNotEmpty()
-  dateEnd: Date;
+  dateEnd: string;
 }

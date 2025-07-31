@@ -7,12 +7,8 @@ import { PrismaError } from '../database/prisma-error.enum';
 export class FavouriteService {
   constructor(private readonly prismaService: PrismaService) {}
 
-  async getAll() {
-    const favourites = await this.prismaService.favourite.findMany();
-    if (!favourites.length) {
-      throw new NotFoundException('No favourite venues found');
-    }
-    return favourites;
+  getAll() {
+    return this.prismaService.favourite.findMany();
   }
 
   async create(venueId: number, userId: number) {

@@ -7,6 +7,7 @@ import {
   ParseIntPipe,
   Patch,
   Post,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -14,8 +15,6 @@ import { ReservationService } from './reservation.service';
 import { CreateReservationDto } from './dto/create-reservation.dto';
 import { JwtAuthenticationGuard } from '../authentication/jwt-authentication.guard';
 import { RequestWithUser } from '../authentication/request-with-user';
-import { ApiBearerAuth, ApiExtraModels, ApiTags } from '@nestjs/swagger';
-import { ReservationDto } from './dto/reservation.dto';
 
 @Controller('reservation')
 export class ReservationController {
@@ -24,6 +23,26 @@ export class ReservationController {
   @Get()
   getAll() {
     return this.reservationService.getAll();
+  }
+
+  @Get('availability/:venueId')
+  checkAvailability(
+    @Param('venueId', ParseIntPipe) venueId: number,
+    @Query('from') from: string,
+    @Query('to') to: string,
+  ) {
+    const dateStart = new Date(from);
+    const dateEnd = new Date(to);
+    return this.reservationService.checkAvailability(
+      venueId,
+      dateStart,
+      dateEnd,
+    );
+  }
+
+  @Get('occupied/:id')
+  getOccupiedDates(@Param('id', ParseIntPipe) id: number) {
+    return this.reservationService.getOccupiedDates(id);
   }
 
   @Get('user/:id')
@@ -60,6 +79,6 @@ export class ReservationController {
 
   @Patch(':id')
   update(@Param('id', ParseIntPipe) id: number) {
-    return this.reservationService.changeIsActive(id);
+    return this.reservationService.changeIsPendingRating(id);
   }
 }

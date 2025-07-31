@@ -1,8 +1,8 @@
 export class ReservationDto {
   id: number;
-  dateStart: Date;
-  dateEnd: Date;
-  isActive: boolean;
+  dateStart: string;
+  dateEnd: string;
+  isPendingRating: boolean;
   venueId: number;
   userId: number;
 }

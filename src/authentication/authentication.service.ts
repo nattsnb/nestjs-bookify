@@ -28,10 +28,8 @@ export class AuthenticationService {
     try {
       const hashedPassword = await bcrypt.hash(signUpData.password, 10);
       return await this.usersService.create({
-        name: signUpData.name,
         email: signUpData.email,
         password: hashedPassword,
-        phoneNumber: signUpData.phoneNumber,
       });
     } catch (error) {
       if (

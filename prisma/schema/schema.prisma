@@ -72,8 +72,8 @@ model Reservation {
 model User {
   id           Int           @id @default(autoincrement())
   email        String        @unique
-  name         String
-  phoneNumber  String
+  name         String?
+  phoneNumber  String?
   password     String
   venues       Venue[]
   reservations Reservation[]

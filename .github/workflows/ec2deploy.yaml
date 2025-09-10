@@ -55,11 +55,11 @@ jobs:
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'sudo docker rm bookify || true'
       - name: Run new container
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'sudo docker run -d --name bookify \
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo docker run -d --name bookify \
             -e NODE_ENV=production \
-            -e DATABASE_URL=${{ secrets.DATABASE_URL }} \
-            -e JWT_SECRET=${{ secrets.JWT_SECRET }} \
-            -e JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }} \
-            -e FRONTEND_URL=${{ secrets.FRONTEND_URL }} \
+            -e 'DATABASE_URL=${{ secrets.DATABASE_URL }}' \
+            -e 'JWT_SECRET=${{ secrets.JWT_SECRET }}' \
+            -e 'JWT_EXPIRATION_TIME=${{ secrets.JWT_EXPIRATION_TIME }}' \
+            -e 'FRONTEND_URL=${{ secrets.FRONTEND_URL }}' \
             -p 80:3000 \
-            natts00nb/bookify:latest'
+            natts00nb/bookify:latest"

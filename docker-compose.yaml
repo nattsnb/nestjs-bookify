@@ -1,4 +1,19 @@
 services:
+  api:
+    image: natts00nb/bookify:latest
+    container_name: bookify-api
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: deployment
+    ports:
+      - '3000:3000'
+    depends_on:
+      - postgres
+    networks:
+      - postgres
+    restart: always
+
   postgres:
     image: postgres:15.3
     container_name: nestjs-postgres

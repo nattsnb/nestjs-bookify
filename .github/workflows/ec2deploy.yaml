@@ -3,12 +3,14 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch: {}
 env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
   DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
   SSH_KEY: ${{ secrets.SSH_KEY }}
 jobs:
   build:
+    environment: deployment
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -28,6 +30,7 @@ jobs:
           dockerfile: ./Dockerfile
           tags: natts00nb/bookify:latest
   deploy:
+    environment: deployment
     needs: build
     runs-on: ubuntu-latest
     steps:

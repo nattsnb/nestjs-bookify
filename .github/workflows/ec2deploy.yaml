@@ -72,3 +72,7 @@ jobs:
             -e 'FRONTEND_URL=${{ secrets.FRONTEND_URL }}' \
             -p 80:3000 \
             natts00nb/bookify:latest"
+      - name: Seed database
+        run: |
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} \
+            "docker exec bookify sh -lc 'npx prisma db seed'"

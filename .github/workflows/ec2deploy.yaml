@@ -3,7 +3,7 @@ on:
   push:
     branches: master
   pull_request:
-      branches: master
+    branches: master
   workflow_dispatch: {}
 env:
   DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
@@ -48,22 +48,22 @@ jobs:
           chmod 600 key.pem
       - name: Pull Docker image
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'sudo docker pull natts00nb/bookify:latest'
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker pull natts00nb/bookify:latest'
       - name: Stop running container
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'sudo docker stop bookify || true'
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'sudo docker rm bookify || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker stop bookify || true'
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} 'docker rm bookify || true'
       - name: Ensure docker network and attach DB
         run: |
           ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "
             set -e
-            sudo docker network create postgres || true
-            sudo docker network connect postgres nestjs-postgres || true
-            sudo docker network connect postgres nestjs-pgadmin || true
+            docker network create postgres || true
+            docker network connect postgres nestjs-postgres || true
+            docker network connect postgres nestjs-pgadmin || true
           "
       - name: Run new container
         run: |
-          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "sudo docker run -d --name bookify \
+          ssh -o StrictHostKeyChecking=no -i key.pem ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} "docker run -d --name bookify \
             --network postgres \
             -e NODE_ENV=production \
             -e 'DATABASE_URL=${{ secrets.DATABASE_URL }}' \

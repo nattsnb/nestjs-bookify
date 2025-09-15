@@ -112,7 +112,7 @@ describe('The AuthenticationService', () => {
       const result = await authenticationService.logIn(logInData, response);
       expect(response.setHeader).toHaveBeenCalledWith(
         'Set-Cookie',
-        'Authentication=mocked-token; HttpOnly; Path=/; Max-Age=43200',
+        'Authentication=mocked-token; HttpOnly; Path=/; Max-Age=43200; SameSite=None; Secure',
       );
       expect(result).toBe(userData);
     });
@@ -141,7 +141,7 @@ describe('The AuthenticationService', () => {
     it('should return cookie with token and expiration', () => {
       const result = authenticationService.getCookieWithJwtToken(userData.id);
       expect(result).toBe(
-        'Authentication=mocked-token; HttpOnly; Path=/; Max-Age=43200',
+        'Authentication=mocked-token; HttpOnly; Path=/; Max-Age=43200; SameSite=None; Secure',
       );
     });
   });

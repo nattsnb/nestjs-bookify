@@ -4,27 +4,30 @@ Database for Booking mock-up.
 
 ## App installation:
 
-1. Pull repo to your directory
-2. Move to branch 'feat/testing'
-3. Install dependencies
+1. On branch master, install dependencies
 
-`npm install`
+`npm ci`
 
-4. Start Docker software
-5. Provide with .env file containing DATABASE_URL, FRONTEND_URL, JWT_SECRET, JWT_EXPIRATION_TIME
-6. In parallel terminal, in directory 'nestjs-bookify/', run:
+2. Start Docker software
+3. Provide with .env file containing DATABASE_URL, FRONTEND_URL, JWT_SECRET, JWT_EXPIRATION_TIME
+4. Provide with .docker.env file containing POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, PGADMIN_DEFAULT_EMAIL, PGADMIN_DEFAULT_PASSWORD
+5. In directory 'nestjs-bookify/', run:
 
-`docker compose up`
+`docker compose up -d`
 
-7. In directory 'nestjs-bookify/' run:
+6. In directory 'nestjs-bookify/' run:
 
 `npm run build-prisma`
 
-8. In directory 'nestjs-bookify/' run:
+7. In directory 'nestjs-bookify/' run:
 
-`npm prisma migrate dev`
+`npx prisma migrate dev`
 
-9. To start the server, run:
+7. To use seed file, in directory 'nestjs-bookify/' run:
+
+`npm run seed-database`
+
+8. To start the server, run:
 
 `npm run start`
 
@@ -32,7 +35,7 @@ Database for Booking mock-up.
 
 ### Master
 
-Basic website file structure, nothing to display.
+Fully working app.
 
 ### feat/structure
 
@@ -44,4 +47,12 @@ Advanced functionality: filters for venue search results and endpoints for the c
 
 ### feat/testing
 
-Test development and final corrections.
+Test development.
+
+### feat/frontend-corelation
+
+Adjusting existing app to use with provided frontend.
+
+### feat//correction
+
+Final corrections.

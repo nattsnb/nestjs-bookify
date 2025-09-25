@@ -10,7 +10,7 @@ import {
   Post,
   Query,
   Req,
-  Res,
+  Res, UnauthorizedException,
   UseGuards,
 } from '@nestjs/common';
 import { VenueService } from './venue.service';
@@ -29,7 +29,7 @@ export class VenueController {
 
   @Get()
   getAll() {
-    return this.venueService.getAll();
+    throw new UnauthorizedException();
   }
 
   @Get('cities')
